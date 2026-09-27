@@ -1,6 +1,6 @@
 # AWS_data_analysis
 
-OlistのブラジルECサイトデータを使い、売上増加につながる改善候補を探るプロジェクトです。AWS（S3・Athena）とSQLでデータを準備し、Python（Positron / Jupyter Notebook）で注文・顧客体験を分析します。売上指標の基準値を作り、地域・商品・販売者などの違いから施策仮説を選び、実施可能な施策は比較検証することを目指します。
+OlistのブラジルECサイトデータを使い、売上増加につながる改善候補を探るプロジェクトです。AWS（S3・Athena）とSQLでデータを準備し、Python（Positron / Jupyter Notebook）で注文・顧客体験を分析します。売上指標の基準値を作り、地域・商品・販売者などの違いから施策仮説を立て、実施可能な施策は比較検証することを目指します。
 
 ## プロジェクトの目的
 
@@ -8,6 +8,17 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 - 地域・商品カテゴリ・販売者などに分け、売上機会と顧客体験の課題を探る
 - 配送やレビューとの関連を、施策対象を見つけるための補助情報として使う
 - 施策仮説を立て、可能であれば比較群を設けて売上・利益への効果を検証する
+
+## 現在位置と次の段階
+
+月別・州別のGMVと注文数を基準値として確認し、州×商品カテゴリの構成と、州別の注文単位の金額分布を調べています。注文額の差を売上機会と直結させず、注文数・GMV・商品構成・顧客体験も合わせて次の問いを整理する段階です。
+
+1. 月別・州別の売上基準値を確認（実施済み）
+2. 州×商品カテゴリのGMVと注文数を確認（実施済み）
+3. カテゴリを含む注文の割合と州内GMVシェアを比較（実施済み）
+4. 注文単位のデータを照合し、州別の注文額の中央値と分布を確認（実施済み）
+5. 確認した差について、次に調べる要因と必要なデータを選定する
+6. 施策の実施条件と費用を整理し、実施できる場合は効果を比較検証する
 
 ## データ
 
@@ -20,9 +31,9 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 ## 使用技術
 
 - **AWS:** Amazon S3、Amazon Athena
-- **SQL:** Athena用クエリ（Redshift用ディレクトリも用意）
+- **SQL:** Athena用クエリ
 - **分析:** Python、R、Positron、Jupyter Notebook
-- **分析手法:** 記述統計、箱ひげ図、Kruskal–Wallis検定、Dunn検定（Bonferroni補正）、ロジスティック回帰
+- **分析手法:** 記述統計、箱ひげ図、Kruskal–Wallis検定、Dunn検定（Bonferroni・Holm補正）、ロジスティック回帰
 
 ## リポジトリ構成
 
@@ -34,8 +45,7 @@ AWS_data_analysis/
 ├── images/           # 分析図
 ├── notebooks/        # Python / Rによる分析
 ├── sql/
-│   ├── athena/       # Athena用SQL
-│   └── redshift/     # Redshift用SQL
+│   └── athena/       # Athena用SQL
 ├── src/              # 分析用コード
 └── README.md
 ```
@@ -51,9 +61,27 @@ AWS_data_analysis/
 - 送料合計：2,198,275.64（GMVとは分けて集計）
 - 注文数・GMVが最大の州：SP（40,501注文、GMV 5,067,633.16）
 - 月別GMVが最大：2017年11月（987,765.37、7,289注文）
+- [売上基準分析Notebook](notebooks/sales_baseline_by_month_state.ipynb)
 - [月別・州別の売上基準集計SQL](sql/athena/14_sales_baseline_by_month_state.sql)
+- [月別GMVと注文数の推移](images/Monthly_GMV_and_Order_Count.png)、[月×州GMVの分布](images/Monthly_GMV_Distribution_by_State.png)
+- [州別GMVシェア](images/State_GMV_Share_Selected_Groups.png)
 
-SPは注文数・GMVの規模が最大ですが、平均注文額は125.12で、全体平均137.04を下回りました。商品構成などの違いを次に確認するための仮説候補として扱い、この集計だけで施策の効果や原因とは判断しません。利益・原価・販促費の情報がないため、利益額や利益への効果も測定できません。2016年の初期月は注文数が非常に少なく、月ごとの比較から除外して慎重に扱う必要があります。
+州別の平均注文額は、その州のGMV合計を注文数合計で割って求めます。SPは125.12で全体平均137.04を下回り、ALは198.63（397注文）、PAは184.43（946注文）でした。AL・PAは注文数が少ないため、平均注文額の差だけから市場機会を判断しません。[月別平均注文額の分布（平均順）](images/Monthly_AOV_Distribution_by_State_Sorted_by_Mean.png)と[同（中央値順）](images/Monthly_AOV_Distribution_by_State_Sorted_by_Median.png)は、各州の月ごとの変動を見る補助資料です。図中の中央値は注文1件ごとの金額の中央値ではありません。利益・原価・販促費の情報がないため、利益額や利益への効果も測定できません。2016年の初期月は注文数が非常に少なく、月ごとの比較では慎重に扱います。
+
+州別の注文額の中央値を確認するため、[注文単位の売上データを作るSQL](sql/athena/19_order_level_sales_by_state.sql)を実行しました。月×州の集計済みCSVから注文額の中央値は復元できないためです。注文単位CSVは96,478行で、注文IDの重複はありません。GMV合計13,221,498.11と送料合計2,198,275.64は既存の月×州集計と一致しました。
+
+[州別注文額の分析Notebook](notebooks/order_level_sales_by_state.ipynb)では、注文ごとのGMVを州別に比較しました。[平均順の箱ひげ図](images/Order_Value_Distribution_by_State_Sorted_by_Mean.png)と[中央値順の箱ひげ図](images/Order_Value_Distribution_by_State_Sorted_by_Median.png)は、1注文ごとの分布を示します。外れ値の点は図では非表示ですが、集計・検定から除外していません。図は[保存用コード](src/order_value_state_plots.py)から再作成できます。
+
+| 州 | 注文数 | 平均注文額 | 注文額の中央値 |
+|---|---:|---:|---:|
+| PB | 517 | 217.77 | 110.32 |
+| AP | 67 | 199.62 | 109.90 |
+| AC | 80 | 199.14 | 119.45 |
+| AL | 397 | 198.63 | 106.90 |
+| PA | 946 | 184.43 | 105.00 |
+| SP | 40,501 | 125.12 | 79.50 |
+
+27州の注文額分布にはKruskal–Wallis検定で差が見られました（H = 732.3388、p = 1.18 × 10⁻¹³⁷）。Dunn検定（Holm補正）後、SPとAP・AC・PB・ALの各比較でも差が見られ、順位に基づく効果量の絶対値はそれぞれ0.278、0.241、0.231、0.198でした。Notebookの区分ではいずれも小さい効果量です。AP・ACは注文件数が少なく、注文額が高いことだけで販促の優先州や売上増加効果は判断しません。GMV規模が大きいSPと、1注文あたりの金額が高い州は別の観点で評価します。
 
 配送遅延分析の対象95,830注文とは抽出条件が異なります。売上集計対象96,478注文のうち、配送遅延分析で必要な配送日と有効レビューの両方がそろう注文は95,824件でした。分析ごとに必要な情報が異なるため、対象件数を直接比較せず、各分析で条件を明記します。
 
@@ -68,8 +96,12 @@ SPは注文数・GMVの規模が最大ですが、平均注文額は125.12で、
 - 未分類カテゴリ：GMV 170,726.63（全体の約1.29%）
 - [商品カテゴリ・顧客州別の分析Notebook](notebooks/sales_by_category_state.ipynb)
 - [商品カテゴリ・顧客州別の売上集計SQL](sql/athena/18_sales_by_category_state.sql)
+- [全体のカテゴリ別GMVシェア](images/Top10_GMV_Share_by_Product_Category.png)
+- 州内カテゴリ別GMV：[SP](images/Top20_Product_Categories_by_GMV_in_SP.png)・[RJ](images/Top20_Product_Categories_by_GMV_in_RJ.png)・[MG](images/Top20_Product_Categories_by_GMV_in_MG.png)・[AL](images/Top20_Product_Categories_by_GMV_in_AL.png)・[PA](images/Top20_Product_Categories_by_GMV_in_PA.png)
 
 全体と州内でGMV上位のカテゴリが異なるため、地域ごとに販売構成が異なる可能性があります。これは追加検証する仮説候補であり、カテゴリの選択や販促施策で売上が増えることを示すものではありません。`category_order_count`はそのカテゴリを含む注文数です。同じ注文に複数カテゴリの商品が含まれる場合はカテゴリごとに数えるため、カテゴリ別の注文数を合計してもユニークな注文数にはなりません。原価・販促費等がないため、この集計から利益は算出できません。
+
+AL・PAでは`bed_bath_table`を含む注文の割合が4.53%、3.59%で、SPの10.73%を下回りました。州内GMVシェアはAL 2.45%、PA 2.01%、SP 9.32%でした。`toys`を含む注文の割合はAL 3.02%、PA 2.85%、SP 3.89%でした。これらは確認した集計結果であり、差が生じた理由や販促の効果はまだ分かりません。次に調べる指標は、必要性と計算方法を確認してから決めます。現在の顧客テーブルに年齢情報はないため、年代別の購入分析はこのデータだけでは行えません。
 
 ### 注文金額・送料とレビュー評価
 
@@ -128,11 +160,12 @@ python -m pip install -r requirements.txt
 
 次回以降は`.\.venv\Scripts\Activate.ps1`で有効化します。Positron / Jupyter Notebookを使う場合は、Pythonインタープリターとしてプロジェクト内の`.venv`を選択してください。
 
-Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
+Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。注文額中央値の分析に進む際は、[`19_order_level_sales_by_state.sql`](sql/athena/19_order_level_sales_by_state.sql)の結果を`data/order_level_sales_by_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
 
 ## ビジネス上の示唆と今後の課題
 
 - 初期月や期間途中の月のデータ範囲を確認し、比較に使う期間を決める
+- AL・PAとSPのカテゴリ購入割合の差について、次に確かめたい問いと必要なデータを整理する
 - 未分類カテゴリの内訳を調べ、商品情報の結合状況を確認する
 - 月別・カテゴリ別の売上を確認し、地域差と季節変動を分けて考える
 - 販売者・リピーター等の情報を追加し、改善仮説をさらに絞る
