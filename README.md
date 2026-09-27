@@ -63,14 +63,21 @@ AWS_data_analysis/
 - 月別GMVが最大：2017年11月（987,765.37、7,289注文）
 - [売上基準分析Notebook](notebooks/sales_baseline_by_month_state.ipynb)
 - [月別・州別の売上基準集計SQL](sql/athena/14_sales_baseline_by_month_state.sql)
-- [月別GMVと注文数の推移](images/Monthly_GMV_and_Order_Count.png)、[月×州GMVの分布](images/Monthly_GMV_Distribution_by_State.png)
-- [州別GMVシェア](images/State_GMV_Share_Selected_Groups.png)
+- 補助図：[月×州GMVの分布](images/Monthly_GMV_Distribution_by_State.png)
+
+![購入月ごとのGMVと注文数の推移](images/Monthly_GMV_and_Order_Count.png)
+
+月別のGMVと注文数を同じ期間で確認できます。初期月は注文数が少ないため、通常月の傾向と分けて読みます。
 
 州別の平均注文額は、その州のGMV合計を注文数合計で割って求めます。SPは125.12で全体平均137.04を下回り、ALは198.63（397注文）、PAは184.43（946注文）でした。AL・PAは注文数が少ないため、平均注文額の差だけから市場機会を判断しません。[月別平均注文額の分布（平均順）](images/Monthly_AOV_Distribution_by_State_Sorted_by_Mean.png)と[同（中央値順）](images/Monthly_AOV_Distribution_by_State_Sorted_by_Median.png)は、各州の月ごとの変動を見る補助資料です。図中の中央値は注文1件ごとの金額の中央値ではありません。利益・原価・販促費の情報がないため、利益額や利益への効果も測定できません。2016年の初期月は注文数が非常に少なく、月ごとの比較では慎重に扱います。
 
+![顧客州別のGMVシェア。SPが最大で、RJとMGが続く](images/State_GMV_Share_Selected_Groups.png)
+
+この図は州別の**GMV規模**を示します。注文1件あたりの金額や利益の順位を示すものではありません。
+
 州別の注文額の中央値を確認するため、[注文単位の売上データを作るSQL](sql/athena/19_order_level_sales_by_state.sql)を実行しました。月×州の集計済みCSVから注文額の中央値は復元できないためです。注文単位CSVは96,478行で、注文IDの重複はありません。GMV合計13,221,498.11と送料合計2,198,275.64は既存の月×州集計と一致しました。
 
-[州別注文額の分析Notebook](notebooks/order_level_sales_by_state.ipynb)では、注文ごとのGMVを州別に比較しました。[平均順の箱ひげ図](images/Order_Value_Distribution_by_State_Sorted_by_Mean.png)と[中央値順の箱ひげ図](images/Order_Value_Distribution_by_State_Sorted_by_Median.png)は、1注文ごとの分布を示します。外れ値の点は図では非表示ですが、集計・検定から除外していません。図は[保存用コード](src/order_value_state_plots.py)から再作成できます。
+[州別注文額の分析Notebook](notebooks/order_level_sales_by_state.ipynb)では、注文ごとのGMVを州別に比較しました。下の箱ひげ図は州別の注文額中央値が高い順に並べています。[平均順の図](images/Order_Value_Distribution_by_State_Sorted_by_Mean.png)も参照できます。外れ値の点は図では非表示ですが、集計・検定から除外していません。図は[保存用コード](src/order_value_state_plots.py)から再作成できます。
 
 | 州 | 注文数 | 平均注文額 | 注文額の中央値 |
 |---|---:|---:|---:|
@@ -80,6 +87,10 @@ AWS_data_analysis/
 | AL | 397 | 198.63 | 106.90 |
 | PA | 946 | 184.43 | 105.00 |
 | SP | 40,501 | 125.12 | 79.50 |
+
+![注文ごとのGMVを州別に示した箱ひげ図。州は注文額中央値の高い順](images/Order_Value_Distribution_by_State_Sorted_by_Median.png)
+
+箱の中央線は**注文1件ごとのGMVの中央値**、白いひし形は平均値です。先ほどの月×州の平均注文額の箱ひげ図とは集計単位が異なります。
 
 27州の注文額分布にはKruskal–Wallis検定で差が見られました（H = 732.3388、p = 1.18 × 10⁻¹³⁷）。Dunn検定（Holm補正）後、SPとAP・AC・PB・ALの各比較でも差が見られ、順位に基づく効果量の絶対値はそれぞれ0.278、0.241、0.231、0.198でした。Notebookの区分ではいずれも小さい効果量です。AP・ACは注文件数が少なく、注文額が高いことだけで販促の優先州や売上増加効果は判断しません。GMV規模が大きいSPと、1注文あたりの金額が高い州は別の観点で評価します。
 
@@ -96,8 +107,11 @@ AWS_data_analysis/
 - 未分類カテゴリ：GMV 170,726.63（全体の約1.29%）
 - [商品カテゴリ・顧客州別の分析Notebook](notebooks/sales_by_category_state.ipynb)
 - [商品カテゴリ・顧客州別の売上集計SQL](sql/athena/18_sales_by_category_state.sql)
-- [全体のカテゴリ別GMVシェア](images/Top10_GMV_Share_by_Product_Category.png)
 - 州内カテゴリ別GMV：[SP](images/Top20_Product_Categories_by_GMV_in_SP.png)・[RJ](images/Top20_Product_Categories_by_GMV_in_RJ.png)・[MG](images/Top20_Product_Categories_by_GMV_in_MG.png)・[AL](images/Top20_Product_Categories_by_GMV_in_AL.png)・[PA](images/Top20_Product_Categories_by_GMV_in_PA.png)
+
+![全体GMVに占める商品カテゴリ上位10とその他の割合](images/Top10_GMV_Share_by_Product_Category.png)
+
+この図は全体の**カテゴリ別GMV構成**です。「その他」には上位10以外のカテゴリが含まれます。
 
 全体と州内でGMV上位のカテゴリが異なるため、地域ごとに販売構成が異なる可能性があります。これは追加検証する仮説候補であり、カテゴリの選択や販促施策で売上が増えることを示すものではありません。`category_order_count`はそのカテゴリを含む注文数です。同じ注文に複数カテゴリの商品が含まれる場合はカテゴリごとに数えるため、カテゴリ別の注文数を合計してもユニークな注文数にはなりません。原価・販促費等がないため、この集計から利益は算出できません。
 
@@ -108,9 +122,13 @@ AL・PAでは`bed_bath_table`を含む注文の割合が4.53%、3.59%で、SPの
 注文に複数の商品が含まれることを考慮し、商品単位の明細を注文単位に集約してからレビュー情報と結合しました。レビュー評価別に注文金額と送料を比較しています。
 
 - [レビュー評価別の注文金額分析](notebooks/review_price_analysis.ipynb)
-- [レビュー評価別の注文金額・送料の図](images/Order_Price_by_Review_Score_Box.png)、[送料の図](images/Order_Freight_by_Review_Score.png)
+- 補助図：[レビュー評価別の注文金額](images/Order_Price_by_Review_Score_Box.png)
 
 Kruskal–Wallis検定では、注文金額・送料ともにレビュー評価群間で統計的な差が確認されました。一方、効果量 ε² は注文金額0.003015、送料0.009481で、どちらも小さい値でした。大きなサンプルでは、p値だけでなく効果量も確認する必要があります。観察データの分析であり、因果関係を示すものではありません。
+
+![レビュー評価ごとの注文送料の分布を示す箱ひげ図](images/Order_Freight_by_Review_Score.png)
+
+評価群による送料分布の違いを示す補助図です。図で差が見えても、上記の効果量は小さく、送料が評価を変えたとは結論できません。
 
 ### 配送遅延とレビュー評価
 
