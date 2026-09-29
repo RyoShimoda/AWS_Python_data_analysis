@@ -1,4 +1,4 @@
-# AWS_data_analysis
+# AWS_Python_data_analysis
 
 OlistのブラジルECサイトデータを使い、売上増加につながる改善候補を探るプロジェクトです。AWS（S3・Athena）とSQLでデータを準備し、Python（Positron / Jupyter Notebook）で注文・顧客体験を分析します。売上指標の基準値を作り、地域・商品・販売者などの違いから施策仮説を立て、実施可能な施策は比較検証することを目指します。
 
