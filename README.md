@@ -62,7 +62,7 @@ AWS_data_analysis/
 
 注文に複数の商品が含まれることを考慮し、商品単位の明細を注文単位に集約してからレビュー情報と結合しました。レビュー評価別に注文金額と送料を比較しています。
 
-- [レビュー評価別の注文金額・送料分析Notebook](notebooks/review_price_analysis.ipynb)
+- [レビュー評価別の注文金額・送料分析Notebook](notebooks/review_price_analysis.ipynb)  
 ![レビュー評価別の注文金額の分布を示す箱ひげ図](images/Order_Price_by_Review_Score_Box.png)
 ![レビュー評価別の注文送料の分布を示す箱ひげ図](images/Order_Freight_by_Review_Score.png)
 
@@ -83,6 +83,7 @@ Kruskal–Wallis検定では、注文金額・送料ともにレビュー評価�
 実配送日と予定配送日の差を`delivery_delay_days`として集計しました。負の値は予定より早い配送、0は予定どおり、正の値は予定より遅い配送です。
 
 - [配送遅延分析Notebook](notebooks/review_delivery_analysis.ipynb)
+![レビュー評価別の配送遅延の分布を示す箱ひげ図](images/Delivery_Delay_by_Review_Score.png)
 - 分析対象：95,830注文
 - レビュー評価別の中央値：1点 -7日、2点 -10日、3点 -11日、4点 -12日、5点 -13日
 - Kruskal–Wallis検定：H = 3890.1397、p < 0.001
