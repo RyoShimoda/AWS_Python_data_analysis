@@ -26,8 +26,14 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 6. 確認した差について、次に調べる要因と必要なデータを選定する
 7. 施策の実施条件と費用を整理し、実施できる場合は効果を比較検証する
 
-## データ
+##  現在までの分析から考えられるGMV最大化のための改善施策
+ 
+1. **高単価な地方州（PB州・AP州）へのターゲティング広告の強化**
+    - 主要なSP州（サンパウロ）は注文数は多いものの商品単価が統計的に有意に低い（中央値が最小）。売上効率を高めるため、単価がSP州の約2倍である地方州へマーケティング予算をシフト。  
+ 2. **配送遅延アラートの構築と先回りクーポン配布**
+    - ロジスティック回帰モデルの結果、顧客満足度を最も毀損する要因は「配送遅延」と判明（現状。モデル評価は低いのでモデルの再構築が必要）。遅延が確定した顧客へ商品到着前に「お詫びクーポン」を自動送付し、レビュー悪化による将来的なGMV損失を未然に防ぐ。
 
+## データ
 - **データセット:** [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
 - **主なデータ:** 注文、商品、送料、支払い、レビュー、配送に関する情報
 - **ライセンス:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
@@ -56,6 +62,8 @@ AWS_data_analysis/
 └── README.md
 ```
 
+
+ 
 ## 分析内容
 
 ### 注文金額・送料とレビュー評価
@@ -114,7 +122,7 @@ Train / Validation / Testを60 / 20 / 20に分割し、ValidationでF1が最大�
 | F1-score | 0.4377 |
 | ROC-AUC | 0.6838 |
 
-このモデルは低評価の傾向を一定程度識別しましたが、低評価注文の約65%は見逃しています。現時点では改善施策の対象を選ぶための探索分析であり、売上増加や配送改善の因果効果を示すものではありません。説明変数には配送後に確定する配送遅延日数が含まれるため、購入前の予測にはそのまま使えません。
+このモデルは低評価の傾向を一定程度識別しましたが、低評価注文の約65%は見逃しています。現時点では改善施策の対象を選ぶための探索分析であり、売上増加や配送改善の因果効果を示すものではありません。説明変数には配送後に確定する配送遅延日数が含まれるため、購入前の予測にはそのまま使うことはできません。
 
 ### 売上増加に向けた基準分析
 
@@ -184,6 +192,10 @@ Train / Validation / Testを60 / 20 / 20に分割し、ValidationでF1が最大�
 
 AL・PAでは`bed_bath_table`を含む注文の割合が4.53%、3.59%で、SPの10.73%を下回りました。州内GMVシェアはAL 2.45%、PA 2.01%、SP 9.32%でした。`toys`を含む注文の割合はAL 3.02%、PA 2.85%、SP 3.89%でした。これらは確認した集計結果であり、差が生じた理由や販促の効果はまだ分かりません。次に調べる指標は、必要性と計算方法を確認してから決めます。現在の顧客テーブルに年齢情報はないため、年代別の購入分析はこのデータだけでは行えません。
 
+
+
+
+
 ## 実行環境について
 
 Pythonの依存パッケージはプロジェクト直下の`.venv`に分離します。Windows PowerShellでは、初回に次のコマンドを実行してください。
@@ -199,18 +211,12 @@ python -m pip install -r requirements.txt
 
 Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。注文額中央値の分析に進む際は、[`19_order_level_sales_by_state.sql`](sql/athena/19_order_level_sales_by_state.sql)の結果を`data/order_level_sales_by_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
 
-## 今後の課題
+## 今後考えられる分析課題
 
-- 初期月や期間途中の月のデータ範囲を確認し、比較に使う期間を決める
-- AL・PAとSPのカテゴリ購入割合の差について、次に確かめたい問いと必要なデータを整理する
 - 月別・カテゴリ別の売上を確認し、地域差と季節変動を分けて考える
 - 販売者・リピーター等の情報を追加し、改善仮説をさらに絞る
 - 売上規模に加え、平均注文額・低評価率・遅延率を使って施策候補を絞る
-- 再購入や利益を測れるデータの有無を確認し、売上増加と利益改善を区別する
-- 施策を試せる場合は比較群を設け、施策前後の売上・注文数・利益を評価する
-- 低評価予測モデルは、運用上の対応方法と費用対効果が明確になった段階で再評価する
-- 確認できた結果とビジネス上の示唆を、このREADMEと[`development_log.md`](docs/development_log.md)に反映する
 
 ## 更新方針
 
-READMEはプロジェクトの概要と、現時点で確認できた主な結果を伝える入口として保ちます。分析の試行錯誤や日ごとの判断は[`development_log.md`](docs/development_log.md)に記録し、節目ごとにREADMEへ確定した内容を反映します。
+READMEはプロジェクトの概要と、現時点で確認できた主な結果を伝えます。分析の試行錯誤や日ごとの判断は[`development_log.md`](docs/development_log.md)に記録し、節目ごとにREADMEへ確定した内容を反映します。
