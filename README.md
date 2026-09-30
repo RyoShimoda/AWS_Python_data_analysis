@@ -28,10 +28,12 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 
 ##  現在までの分析から考えられるGMV最大化のための施策仮説
 以下は分析結果をもとにした施策候補です。施策によるGMV増加や利益改善の効果は、まだ検証していません。
- 
-1. **平均注文額が高い州（PB州・AP州）での販促の検討**
-    - PB州・AP州は、SP州と比べて1注文あたりの金額が高い傾向が見られました。これらの州での販促がGMV増加につながる可能性を検討します。（※注文件数は少なく、商品構成や需要、広告費に対する効果は未確認です。予算配分を変える前に、対象商品を絞った小規模な検証が必要です。）
- 2. **配送遅延が判明した注文への案内・フォロー**
+
+1. **注文規模の大きい州（SP・RJ・MG）での平均注文額向上の検討**
+    - 3州で全体のGMVの約63.4%、注文数の約66.5%を占めます。1注文あたりのGMVはSPが125.12、RJが142.48、MGが136.73で、全体平均は137.04です。特に全体平均を下回るSPを含め、州ごとの商品構成を確認し、平均注文額を高められるか検討します。（※注文数が一定なら平均注文額の上昇はGMVの上昇につながりますが、実現可能性・販促費・利益への効果は未検証です。）
+2. **平均注文額が高い州（PB州・AP州）での販促の検討**
+    - 逆にPB州・AP州は、SP州と比べて、注文数は少ないものの、1注文あたりの金額が高い傾向が見られました。これらの州での販促がGMV増加につながる可能性を検討します。（※注文件数が少なく、商品構成や需要、広告費に対する効果は未確認です。予算配分を変える前に、対象商品を絞った小規模な検証が必要です。）
+3. **配送遅延が判明した注文への案内・フォロー**
     - 今回の低評価予測モデルで扱った変数の中では、配送遅延日数が低評価と強く関連していました。予定配送日を過ぎても届いていない注文への案内や、商品到着後のフォローを施策候補とします。必要に応じて、お詫びクーポンの効果も検証します。（※現在のモデルは実際の配送日を使っているため、到着前の判定にはそのまま使えません。これらの対応が低評価や将来のGMVを改善するか、またクーポン費用に見合うかは未検証です。）
 
 ## データ
@@ -196,6 +198,9 @@ Train / Validation / Testを60 / 20 / 20に分割し、ValidationでF1が最大�
 - [商品カテゴリ・顧客州別の分析Notebook](notebooks/sales_by_category_state.ipynb)
 - [商品カテゴリ・顧客州別の売上集計SQL](sql/athena/18_sales_by_category_state.sql)
 - 州内カテゴリ別GMV：[SP](images/Top20_Product_Categories_by_GMV_in_SP.png)・[RJ](images/Top20_Product_Categories_by_GMV_in_RJ.png)・[MG](images/Top20_Product_Categories_by_GMV_in_MG.png)・[AL](images/Top20_Product_Categories_by_GMV_in_AL.png)・[PA](images/Top20_Product_Categories_by_GMV_in_PA.png)
+- 州内カテゴリ別GMV構成（上位10カテゴリとその他）：[SP](images/Top10_GMV_Share_by_Product_Category_in_SP.png)・[RJ](images/Top10_GMV_Share_by_Product_Category_in_RJ.png)・[MG](images/Top10_GMV_Share_by_Product_Category_in_MG.png)
+
+州別の円グラフは各州のGMVを分母とします。青色はそれぞれの州のGMV順位に対応し、特定のカテゴリに共通の色を割り当てたものではありません。
 
 ![全体GMVに占める商品カテゴリ上位10とその他の割合](images/Top10_GMV_Share_by_Product_Category.png)
 
