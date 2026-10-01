@@ -22,6 +22,12 @@ CATEGORY_MARKERS = {
     "bed_bath_table": "o", "health_beauty": "s",
     "watches_gifts": "^", "computers_accessories": "D",
 }
+CATEGORY_COLORS_SP = {
+    "bed_bath_table": "#0072B2",       # 青
+    "health_beauty": "#E69F00",        # 黄橙
+    "watches_gifts": "#009E73",        # 緑
+    "computers_accessories": "#CC79A7",  # 紫
+}
 
 
 def _finish(fig, image_path=None, show=True):
@@ -149,7 +155,7 @@ def plot_sp_category_trends(
     monthly_plot: pd.DataFrame, seasonal_plot: pd.DataFrame,
     categories: list[str], image_path: Path,
 ):
-    """SPだけを拡大し、カテゴリは線種と記号で区別する。"""
+    """SPだけを拡大し、カテゴリを色・線種・記号で区別する。"""
     fig, axes = plt.subplots(1, 2, figsize=(16, 5), sharey=True)
     for category in categories:
         for ax, data, column, marker_size in [
@@ -161,7 +167,7 @@ def plot_sp_category_trends(
                 & (data["product_category"] == category)
             ].sort_values(column)
             ax.plot(
-                rows[column], rows["aov_part"], color=STATE_COLORS["SP"],
+                rows[column], rows["aov_part"], color=CATEGORY_COLORS_SP[category],
                 linestyle=CATEGORY_STYLES[category],
                 marker=CATEGORY_MARKERS[category], markersize=marker_size,
                 linewidth=2, label=category.replace("_", " "),
@@ -186,6 +192,50 @@ def plot_sp_category_trends(
     fig.savefig(image_path, dpi=200, bbox_inches="tight")
     plt.show()
     return fig
+
+
+def plot_sp_category_orders_and_gmv(
+    plot_data: pd.DataFrame, period_column: str,
+    categories: list[str], title: str, image_path: Path,
+):
+    """SPのカテゴリ注文数とカテゴリGMVを、同じ期間軸で別々の縦軸に描く。"""
+    fig, axes = plt.subplots(
+        len(categories), 2, figsize=(16, 3.2 * len(categories)), sharex="col"
+    )
+    axes[0, 0].set_title("Category order count")
+    axes[0, 1].set_title("Category GMV (product prices)")
+
+    for row_index, category in enumerate(categories):
+        rows = plot_data.loc[
+            (plot_data["customer_state"] == "SP")
+            & (plot_data["product_category"] == category)
+        ].sort_values(period_column)
+        color = CATEGORY_COLORS_SP[category]
+        for column_index, metric in enumerate(("category_order_count", "category_gmv")):
+            ax = axes[row_index, column_index]
+            ax.plot(
+                rows[period_column], rows[metric], color=color,
+                linestyle=CATEGORY_STYLES[category],
+                marker=CATEGORY_MARKERS[category], markersize=6, linewidth=2,
+            )
+            ax.set_ylim(bottom=0)
+            ax.grid(alpha=0.25)
+            if period_column == "season_start":
+                ticks = sorted(pd.to_datetime(plot_data[period_column].dropna().unique()))
+                ax.set_xticks(ticks)
+                ax.set_xticklabels(
+                    [f"{day.year + (day.month == 12)} {SEASON_NAMES[day.month]}"
+                     for day in ticks],
+                    rotation=45, ha="right",
+                )
+            else:
+                ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+                ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+                ax.tick_params(axis="x", rotation=45)
+        axes[row_index, 0].set_ylabel(category.replace("_", " "))
+
+    fig.suptitle(title, fontsize=15)
+    return _finish(fig, image_path)
 
 
 def plot_state_category_bars(

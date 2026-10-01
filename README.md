@@ -16,7 +16,7 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 
 ## 現在位置と次の段階
 
-月別・州別のGMVと注文数を基準値として確認し、州×商品カテゴリの構成、州別の注文単位の金額分布、SP・PB・APのカテゴリ別の月・季節推移を調べました。次は変化が見られたカテゴリについて注文数と商品構成を確かめ、実施条件と費用を整理します。注文額の差を売上機会と直結させず、注文数・GMV・顧客体験も合わせて施策仮説を検討します。
+月別・州別のGMVと注文数を基準値として確認し、州×商品カテゴリの構成、州別の注文単位の金額分布、SP・PB・APのカテゴリ別の月・季節推移を調べました。SPではカテゴリ注文数とGMVの絶対数も比較しました。次は変化が見られたカテゴリ内の商品構成を確かめ、実施条件と費用を整理します。注文額の差を売上機会と直結させず、注文数・GMV・顧客体験も合わせて施策仮説を検討します。
 
 1. 配送遅延と低評価の関係を確認（実施済み）
 2. 月別・州別の売上基準値を確認（実施済み）
@@ -212,7 +212,7 @@ AL・PAでは`bed_bath_table`を含む注文の割合が4.53%、3.59%で、SPの
 
 SP・PB・APの時期別比較では、[月×州×カテゴリの集計SQL](sql/athena/20_monthly_category_sales_by_state.sql)の結果を[分析Notebook](notebooks/monthly_seasonal_category_by_state.ipynb)で集計しました。CSVは1,488行で、月×州×カテゴリの重複・必須項目の欠損はありません。カテゴリGMVを月×州で合計すると、比較対象の61組すべてで既存の月×州GMVと一致しました（表示上の端数を除く）。
 
-図の縦軸は「カテゴリGMV ÷ その期間の州全体の注文数」です。カテゴリが州の平均注文額にどれだけ含まれるかを示すため、カテゴリだけを購入した注文の平均額とは異なります。4カテゴリに絞り、SPは青、PBは橙、APは緑で月別・季節別を通じて固定し、線種と記号でも州を区別しました。SPだけの拡大図では、カテゴリを線種と記号で区別します。**各小図の中では3州が同じ縦軸**ですが、縦軸の範囲はカテゴリごとに異なります。
+図の縦軸は「カテゴリGMV ÷ その期間の州全体の注文数」です。カテゴリが州の平均注文額にどれだけ含まれるかを示すため、カテゴリだけを購入した注文の平均額とは異なります。4カテゴリに絞り、3州比較図ではSPを青、PBを橙、APを緑で月別・季節別を通じて固定し、線種と記号でも州を区別しました。SPだけの拡大図では、4カテゴリを異なる色・線種・記号で区別します。**各小図の中では3州が同じ縦軸**ですが、縦軸の範囲はカテゴリごとに異なります。
 
 ![SP・PB・APの月別カテゴリ構成額](images/Monthly_Category_AOV_Contribution_SP_PB_AP.png)
 
@@ -220,7 +220,17 @@ SP・PB・APの時期別比較では、[月×州×カテゴリの集計SQL](sql/
 
 ![SP州の月別・季節別カテゴリ構成額を拡大](images/SP_Category_AOV_Contribution_Monthly_Seasonal.png)
 
-比較期間は2017年3月～2018年8月です。APはこの期間の月別注文数が1～11件で、2017年7月は州全体で1件でした。その月の`health_beauty`構成額259.90は1件の注文による値です。3か月にまとめてもAPの注文数は各季節6～17件のため、線の上下だけから季節性や販促機会は判断しません。SPについても、同じ季節を十分な年数で繰り返し観測していないため、季節性は未検証です。次はSPで変化したカテゴリの注文数・商品構成を確認します。
+SP州については、同じ4カテゴリの**注文数とGMVの絶対数**も月別・季節別に並べました。左列はカテゴリを含む注文数、右列はそのカテゴリの商品価格合計です。左右で単位が異なるため縦軸を分けています。先の「平均注文額へのカテゴリ構成額」の縦軸も割合ではなく金額です。例えば`bed_bath_table`の2018年5月→6月は注文数が327→350件に増えた一方、カテゴリGMVは38,908.24→37,740.78に減りました。注文数だけではGMVの方向は決まりません。
+
+![SP州のカテゴリ別注文数とGMVの月別推移](images/SP_Category_Order_Count_and_GMV_Monthly.png)
+
+![SP州のカテゴリ別注文数とGMVの季節別推移](images/SP_Category_Order_Count_and_GMV_Seasonal.png)
+
+比較期間は2017年3月～2018年8月です。APはこの期間の月別注文数が1～11件で、2017年7月は州全体で1件でした。その月の`health_beauty`構成額259.90は1件の注文による値です。3か月にまとめてもAPの注文数は各季節6～17件のため、線の上下だけから季節性や販促機会は判断しません。SPについても、同じ季節を十分な年数で繰り返し観測していないため、季節性は未検証です。
+
+SPの同じ3か月（2017年冬と2018年冬）を比べると、`health_beauty`を含む注文は336件から1,049件に増えました。州全体の注文も4,492件から8,617件に増えたため、[Notebook](notebooks/monthly_seasonal_category_by_state.ipynb)ではカテゴリ注文率も比較します。この率は7.48%から12.17%、カテゴリ注文あたりのカテゴリGMVは98.14から120.99、州AOVへの構成額は7.34から14.73でした。注文率とカテゴリ注文あたり金額の両方が変わっていますが、カテゴリ内の商品構成が変わったかどうかは、この集計CSVだけでは分かりません。[商品ID単位の集計SQL](sql/athena/21_sp_product_mix_winter_comparison.sql)の結果は保存済みで、商品構成の解釈はこれから行います。
+
+同じ冬の比較では、`health_beauty`のカテゴリGMVは32,975.36から126,922.31へ93,946.95増えました。Notebookでは「カテゴリGMV＝カテゴリ注文数×カテゴリ注文あたりGMV」により、この差を件数の変化分69,974.50と注文あたりGMVの変化分23,972.45に分けています。これは**観察された金額差の内訳**で、販促や注文増の因果効果ではありません。保存した商品ID単位のCSVは、4カテゴリ・2つの冬についてカテゴリGMV合計が月×州×カテゴリ集計と一致するところまで照合しました。商品構成の解釈は次の段階です。
 
 ## 実行環境について
 
@@ -240,6 +250,8 @@ python -m pip install -r requirements.txt
 次回以降は`.\.venv\Scripts\Activate.ps1`で有効化します。Positron / Jupyter Notebookを使う場合は、Pythonインタープリターとしてプロジェクト内の`.venv`を選択してください。
 
 Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。注文額中央値の分析に進む際は、[`19_order_level_sales_by_state.sql`](sql/athena/19_order_level_sales_by_state.sql)の結果を`data/order_level_sales_by_state.csv`として保存します。SP・PB・APの時期別カテゴリ分析では、[`20_monthly_category_sales_by_state.sql`](sql/athena/20_monthly_category_sales_by_state.sql)の結果を`data/monthly_category_sales_by_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
+
+SPのカテゴリ内の商品構成を確認する際は、[`21_sp_product_mix_winter_comparison.sql`](sql/athena/21_sp_product_mix_winter_comparison.sql)の結果をローカルの`data/sp_product_mix_winter_comparison.csv`に保存します。このCSVも公開リポジトリには含めません。
 
 ## 今後考えられる分析課題
 
