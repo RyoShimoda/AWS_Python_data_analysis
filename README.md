@@ -16,15 +16,15 @@ OlistのブラジルECサイトデータを使い、売上増加につながる�
 
 ## 現在位置と次の段階
 
-月別・州別のGMVと注文数を基準値として確認し、州×商品カテゴリの構成と、州別の注文単位の金額分布を調べています。注文額の差を売上機会と直結させず、注文数・GMV・商品構成・顧客体験も合わせて次の問いを整理する段階です。
+月別・州別のGMVと注文数を基準値として確認し、州×商品カテゴリの構成、州別の注文単位の金額分布、SP・PB・APのカテゴリ別の月・季節推移を調べました。次は変化が見られたカテゴリについて注文数と商品構成を確かめ、実施条件と費用を整理します。注文額の差を売上機会と直結させず、注文数・GMV・顧客体験も合わせて施策仮説を検討します。
 
 1. 配送遅延と低評価の関係を確認（実施済み）
 2. 月別・州別の売上基準値を確認（実施済み）
 3. 州×商品カテゴリのGMVと注文数を確認（実施済み）
 4. カテゴリを含む注文の割合と州内GMVシェアを比較（実施済み）
 5. 注文単位のデータを照合し、州別の注文額の中央値と分布を確認（実施済み）
-6. 確認した差について、次に調べる要因と必要なデータを選定する
-7. 施策の実施条件と費用を整理し、実施できる場合は効果を比較検証する
+6. SP・PB・APの月別・季節別カテゴリ構成を比較する（実施済み。少数注文の州では解釈に注意）
+7. 確認した差について、施策の実施条件と費用を整理し、実施できる場合は効果を比較検証する
 
 ##  現在までの分析から考えられるGMV最大化のための施策仮説
 以下は分析結果をもとにした施策候補です。施策によるGMV増加や利益改善の効果は、まだ検証していません。
@@ -210,7 +210,23 @@ Train / Validation / Testを60 / 20 / 20に分割し、ValidationでF1が最大�
 
 AL・PAでは`bed_bath_table`を含む注文の割合が4.53%、3.59%で、SPの10.73%を下回りました。州内GMVシェアはAL 2.45%、PA 2.01%、SP 9.32%でした。`toys`を含む注文の割合はAL 3.02%、PA 2.85%、SP 3.89%でした。これらは確認した集計結果であり、差が生じた理由や販促の効果はまだ分かりません。次に調べる指標は、必要性と計算方法を確認してから決めます。現在の顧客テーブルに年齢情報はないため、年代別の購入分析はこのデータだけでは行えません。
 
+SP・PB・APの時期別比較では、[月×州×カテゴリの集計SQL](sql/athena/20_monthly_category_sales_by_state.sql)の結果を[分析Notebook](notebooks/monthly_seasonal_category_by_state.ipynb)で集計しました。CSVは1,488行で、月×州×カテゴリの重複・必須項目の欠損はありません。カテゴリGMVを月×州で合計すると、比較対象の61組すべてで既存の月×州GMVと一致しました（表示上の端数を除く）。
+
+図の縦軸は「カテゴリGMV ÷ その期間の州全体の注文数」です。カテゴリが州の平均注文額にどれだけ含まれるかを示すため、カテゴリだけを購入した注文の平均額とは異なります。4カテゴリに絞り、SPは青、PBは橙、APは緑で月別・季節別を通じて固定し、線種と記号でも州を区別しました。SPだけの拡大図では、カテゴリを線種と記号で区別します。**各小図の中では3州が同じ縦軸**ですが、縦軸の範囲はカテゴリごとに異なります。
+
+![SP・PB・APの月別カテゴリ構成額](images/Monthly_Category_AOV_Contribution_SP_PB_AP.png)
+
+![SP・PB・APの季節別カテゴリ構成額](images/Seasonal_Category_AOV_Contribution_SP_PB_AP.png)
+
+![SP州の月別・季節別カテゴリ構成額を拡大](images/SP_Category_AOV_Contribution_Monthly_Seasonal.png)
+
+比較期間は2017年3月～2018年8月です。APはこの期間の月別注文数が1～11件で、2017年7月は州全体で1件でした。その月の`health_beauty`構成額259.90は1件の注文による値です。3か月にまとめてもAPの注文数は各季節6～17件のため、線の上下だけから季節性や販促機会は判断しません。SPについても、同じ季節を十分な年数で繰り返し観測していないため、季節性は未検証です。次はSPで変化したカテゴリの注文数・商品構成を確認します。
+
 ## 実行環境について
+
+### Notebookと共通コード
+
+9冊のNotebookを、目的・入力・結果の解釈が追いやすい形に整理しました。繰り返す集計、効果量、分類指標、描画は[`src/`の共通関数](src/README.md)にまとめ、Notebookから呼び出します。平均注文額やカテゴリ注文率など、判断に使う指標の分子・分母は同ファイルに記載しています。Notebookは上から順に実行してください。図の保存用スクリプトも同じ描画関数を使います。
 
 Pythonの依存パッケージはプロジェクト直下の`.venv`に分離します。Windows PowerShellでは、初回に次のコマンドを実行してください。
 
@@ -223,7 +239,7 @@ python -m pip install -r requirements.txt
 
 次回以降は`.\.venv\Scripts\Activate.ps1`で有効化します。Positron / Jupyter Notebookを使う場合は、Pythonインタープリターとしてプロジェクト内の`.venv`を選択してください。
 
-Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。注文額中央値の分析に進む際は、[`19_order_level_sales_by_state.sql`](sql/athena/19_order_level_sales_by_state.sql)の結果を`data/order_level_sales_by_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
+Notebookの実行には、OlistデータセットとAWS環境（S3・Athena）が必要です。SQLの結果をローカルの`data/`に保存してください。レビュー分析では`data/review_order_summary.csv`と`data/delivery_delay_review_summary.csv`を読み込み、これらは[`12_create_review_order_summary.sql`](sql/athena/12_create_review_order_summary.sql)と[`13_create_delivery_delay_summary.sql`](sql/athena/13_create_delivery_delay_summary.sql)から作成できます。売上分析では[`14_sales_baseline_by_month_state.sql`](sql/athena/14_sales_baseline_by_month_state.sql)の結果を`data/sales_baseline_by_month_state.csv`として、[`18_sales_by_category_state.sql`](sql/athena/18_sales_by_category_state.sql)の結果を`data/sales_by_category_state.csv`として保存します。注文額中央値の分析に進む際は、[`19_order_level_sales_by_state.sql`](sql/athena/19_order_level_sales_by_state.sql)の結果を`data/order_level_sales_by_state.csv`として保存します。SP・PB・APの時期別カテゴリ分析では、[`20_monthly_category_sales_by_state.sql`](sql/athena/20_monthly_category_sales_by_state.sql)の結果を`data/monthly_category_sales_by_state.csv`として保存します。データファイル自体はライセンス条件と再配布の可否を確認し、GitHubには含めない運用です。AWSの接続設定や認証情報はREADMEやNotebookに記載しないでください。
 
 ## 今後考えられる分析課題
 
