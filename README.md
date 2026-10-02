@@ -1,6 +1,11 @@
 # AWS_Python_data_analysis
 
+<<<<<<< HEAD
 Olist のブラジル EC データを用いて、**低評価レビューのリスクを分析・予測し、その要因と将来の購買・GMVとの関係を検証する**データ分析ポートフォリオです。
+=======
+Olist のブラジル EC データを用いて、低評価レビューのリスクを分析・予測し、その要因と将来の購買・GMVとの関係を検証するデータ分析ポートフォリオです。
+AWS（Amazon S3 / Athena）と SQL で分析用データを作成し、Python（Positron / Jupyter Notebook）で統計分析・機械学習・売上構造分析を行っています。
+>>>>>>> cd566522cae1118de7872b4d8fcd0cf0b55aa840
 
 AWS（Amazon S3 / Athena）と SQL で分析用データを作成し、Python（Positron / Jupyter Notebook）で統計分析・機械学習・売上構造分析を行っています。
 
