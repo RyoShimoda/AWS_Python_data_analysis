@@ -155,8 +155,8 @@ Notebook: [`review_price_analysis.ipynb`](notebooks/review_price_analysis.ipynb)
 ### 6.2 配送遅延とレビュー評価
 
 ```text
-delivery_delay_days
-= actual_delivery_date - estimated_delivery_date
+配送遅延日
+= 実際の配送日 - 配送予定日
 ```
 
 - 負の値: 予定より早く配送
@@ -229,7 +229,7 @@ Test データでは、低評価 2,448 件のうち 850 件を検出しました
 | 送料 | 1.265 |
 | 配送遅延日数 | 2.154 |
 
-今回の3特徴量では配送遅延日数の関連が最も大きく見られました。
+今回の3つの特徴量では、配送遅延日数の関連が最も大きいことが分かりました。
 
 ### このモデルの限界
 
@@ -322,7 +322,7 @@ Notebook: [`order_level_sales_by_state.ipynb`](notebooks/order_level_sales_by_st
 ![州別のGMVシェア。SPが最大で、RJとMGが続く](images/State_GMV_Share_Selected_Groups.png)
 
 
-全体と州内で上位カテゴリが異なり、地域によって商品構成が異なる可能性を確認しました。
+全体と州内で上位カテゴリが異なり、地域によって商品構成が異なる可能性があることを確認しました。
 
 Notebook: [`sales_by_category_state.ipynb`](notebooks/sales_by_category_state.ipynb)
 
