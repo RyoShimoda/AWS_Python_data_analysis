@@ -5,8 +5,8 @@ AWS（Amazon S3 / Athena）と SQL で分析用データを作成し、Python（
 
 ## 1. 分析で明らかにしたいこと
 
-> **注文・配送・商品・地域情報から低評価になりやすい注文を識別し、  
-> その要因や対象セグメントを理解したうえで、  
+> **注文・配送・商品・地域情報から低評価になりやすい注文を識別し、
+> その要因や対象セグメントを理解したうえで、
 > 低評価とその後の再購入・将来 GMV の関係を明らかにできるか。**
 
 本プロジェクトは、次の2段階で進めます。
@@ -20,8 +20,8 @@ AWS（Amazon S3 / Athena）と SQL で分析用データを作成し、Python（
    - 低評価 / 高リスク注文と、その後の再購入・注文数・将来 GMV との関係を確認
    - 施策効果そのものではなく、低評価対策が関係しうる売上規模・顧客行動を定量的に把握
 
-> **注意**  
-> Olist データは観察データであり、介入実験の結果は含まれていません。  
+> **注意**
+> Olist データは観察データであり、介入実験の結果は含まれていません。
 > そのため、本プロジェクトでは「施策によって GMV が増加する」といった因果効果は直接推定しません。
 
 ---
@@ -93,8 +93,12 @@ Amazon Athena / SQL
 
 - **AWS:** Amazon S3、Amazon Athena
 - **SQL:** Athena用クエリ
-- **分析:** Python、R、Positron、Jupyter Notebook
+- **Python**：pandas、NumPy、SciPy、scikit-learn、matplotlib、scikit-posthocs など
 - **分析手法:** 記述統計、箱ひげ図、Kruskal–Wallis検定、Dunn検定（Bonferroni・Holm補正）、ロジスティック回帰
+- **開発環境**：Positron、Jupyter Notebook
+- **環境管理**：Docker、requirements.txt
+- **バージョン管理**：Git、GitHub、SourceTree
+
 
 ---
 
@@ -102,6 +106,9 @@ Amazon Athena / SQL
 
 ```text
 AWS_Python_data_analysis/
+├── .devcontainer/
+│   ├── devcontainer.json
+│   └── Dockerfile
 ├── docs/
 │   └── development_log.md
 ├── images/
@@ -110,6 +117,7 @@ AWS_Python_data_analysis/
 │   └── athena/
 ├── src/
 ├── data/                  # Git管理対象外
+├── .dockerignore
 ├── .gitignore
 ├── requirements.txt
 └── README.md
@@ -123,18 +131,32 @@ AWS_Python_data_analysis/
 - `data/`: ローカル分析用データ。GitHub には含めない
 
 
-必要なライブラリ等は以下を実行することでインストールされます。
+### 分析環境の再現方法
+
+本プロジェクトでは、Python分析環境の再現性を高めるため、
+`requirements.txt` に加えてDocker環境を用意しています。
+
+### Docker構成
+
+```text
+.devcontainer/
+├── devcontainer.json
+└── Dockerfile
+
+.dockerignore
+requirements.txt
+```
+
+### ローカルPython環境
+
+必要なPythonパッケージは以下のコマンドでインストールできます。
 
 ```bash
 pip install -r requirements.txt
+
 ```
-
-また、Athena で使用した SQL は `sql/athena/` に保存しています。
-
-AWS のバケット名・認証情報等は公開リポジトリには含めていません。
-
 ---
- 
+
 ## 6. 主な分析結果
 
 ### 6.1 注文金額・送料とレビュー評価
@@ -373,9 +395,9 @@ Notebook: [`sales_by_category_state.ipynb`](notebooks/sales_by_category_state.ip
   × カテゴリGMV / カテゴリ注文数
 ```
 
-と分解できます。これにより、  
-「そのカテゴリがよく買われているから寄与が大きいのか（カテゴリ購入割合）」  
-「そのカテゴリを買ったときの金額が高いから寄与が大きいのか（カテゴリあたりのGMV）」  
+と分解できます。これにより、
+「そのカテゴリがよく買われているから寄与が大きいのか（カテゴリ購入割合）」
+「そのカテゴリを買ったときの金額が高いから寄与が大きいのか（カテゴリあたりのGMV）」
 を分けて検討しています。
 
 ![SP州の月別・季節別カテゴリ構成額を拡大](images/SP_Category_AOV_Contribution_Monthly_Seasonal.png)
@@ -432,7 +454,7 @@ SP州の`health_beauty`について、2017年冬と2018年冬の商品構成を�
 
 ---
 
-## 9. 今後の低評価予測モデルモデル改善計画
+## 9. 今後の低評価予測モデル改善計画
 
 ### Step 1. 予測する時点を決める
 
@@ -557,6 +579,7 @@ GMVに変化はあるか
 - 月別 / 季節別カテゴリ分析
 - SP カテゴリ GMV 変化分解
 - Notebook / `src/` 整理
+- Dockerによる再現可能なPython分析環境の構築
 
 **今後の予定**
 

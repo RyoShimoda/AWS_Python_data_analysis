@@ -1,0 +1,7 @@
+{
+    "name": "AWS Python Data Analysis",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    }
+}

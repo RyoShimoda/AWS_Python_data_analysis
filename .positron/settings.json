@@ -1,0 +1,24 @@
+{ // Jupyterノートブックを開いた時に、自動で自作pyファイルの変更を検知・再読み込みする
+    "jupyter.runStartupCommands": [
+        "%load_ext autoreload",
+        "%autoreload 2"
+    ],
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.rulers": [
+        80
+    ],
+    "files.insertFinalNewline": true,
+    "workbench.keybindings.rstudioKeybindings": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "always",
+            "source.organizeImports.ruff": "always"
+        }
+    },
+    "[r]": {
+        "editor.defaultFormatter": "Posit.air-vscode"
+    },
+    "files.trimTrailingWhitespace": true
+}

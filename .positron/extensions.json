@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        // エラーの視認性を上げる
+        "usernamehw.errorlens",
+        // CSVファイルを色分けして見やすくする
+        "mechatroner.rainbow-csv",
+        // ファイルやフォルダのアイコンを美しく識別しやすくする
+        "pkief.material-icon-theme"
+    ]
+}
