@@ -744,3 +744,42 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 4. 基準モデルと比較する追加特徴量セットを設計する
 
 という順序でモデル改善へ戻る。
+
+## 2026-10-09
+
+### 39. DockerによるPython分析環境の構築
+
+#### 目的
+
+ローカル環境に依存せず、
+同一のPython・ライブラリ構成で分析を再現できるようにするため、
+Dockerによる分析環境を構築した。
+
+#### 実施内容
+
+- Docker Desktop / WSL2を使用したLinuxコンテナ環境を準備
+- `.devcontainer/Dockerfile` を作成
+- `.devcontainer/devcontainer.json` を作成
+- `.dockerignore` を追加
+- `requirements.txt` を分析に必要なPythonパッケージへ整理
+- `python:3.12-slim` をベースにDockerイメージを構築
+- Positron Dev Containers接続用に `curl` を追加
+
+主なPythonパッケージ：
+
+- numpy
+- pandas
+- matplotlib
+- seaborn
+- scipy
+- scikit-learn
+- scikit-posthocs
+- ipython
+- ipykernel
+
+#### 動作確認
+
+以下のコマンドでDockerイメージをビルドした。
+
+```bash
+docker build --no-cache -f .devcontainer/Dockerfile -t aws-python-data-analysis-dev .
