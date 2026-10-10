@@ -468,7 +468,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 #### 実施内容
 - 月×州のGMVと平均注文額の分布図、および州・商品カテゴリ別のGMV図を作成
 - 図のファイル名を、月×州の分布と州全体のシェアが区別できる名前に変更
-- `sales_by_category_state.ipynb`に、AL・PAとSPのカテゴリ購入割合・州内GMVシェアを比較する次の分析セルを追加
+- `5_sales_by_category_state.ipynb`に、AL・PAとSPのカテゴリ購入割合・州内GMVシェアを比較する次の分析セルを追加
 
 #### 分かったこと
 - GMV上位5州はSP・RJ・MG・RS・PR。全体のGMVは注文数の多い州の影響を強く受ける
@@ -521,7 +521,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 
 #### 実施内容
 
-- `order_level_sales_by_state.ipynb`で、注文ごとの商品価格合計（`order_gmv`）を州別に記述統計・箱ひげ図で比較した
+- `6_order_level_sales_by_state.ipynb`で、注文ごとの商品価格合計（`order_gmv`）を州別に記述統計・箱ひげ図で比較した
 - 州別平均順と州別中央値順の箱ひげ図を作成し、`images/Order_Value_Distribution_by_State_Sorted_by_Mean.png`と`images/Order_Value_Distribution_by_State_Sorted_by_Median.png`に保存した。図の縦軸は注文単位のGMVであり、月別平均注文額ではない
 - 27州の注文額分布にKruskal–Wallis検定、州間比較にDunn検定（Holm補正）を適用した
 - 有意差があった州の組み合わせについて、Mann–WhitneyのU統計量から符号付き順位相関係数を効果量として計算した
@@ -570,7 +570,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 
 #### 準備した分析
 
-- `notebooks/promotion_candidate_by_state_category.ipynb`を作成
+- `notebooks/7_promotion_candidate_by_state_category.ipynb`を作成
 - 既存の月×州CSVから州のユニークな注文数・GMVを集計し、州×カテゴリCSVに結合する
 - SP・PB・APについて、各州のGMV上位5カテゴリの注文数、カテゴリ購入割合、州内GMVシェアを表示する
 - カテゴリ購入割合の分母には州のユニークな注文数を使う。複数カテゴリを含む注文はカテゴリごとに計上される
@@ -579,14 +579,14 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 
 - SP・PB・APのカテゴリGMV上位5件を確認した。APは67注文で、`computers`のカテゴリGMV 1,437.00は1注文によるものだった。PBは517注文で、`health_beauty`が75注文、`watches_gifts`が41注文だった
 - カテゴリGMV上位は「広告で伸びるカテゴリ」の順位ではない。特にAPは少数の注文が構成比を大きく動かす可能性がある
-- 次の確認として`notebooks/state_aov_category_decomposition.ipynb`を作成した。各カテゴリのGMVを州のユニークな注文数で割り、州の平均注文額をカテゴリ別の構成額に分けてSPとの差を見る。
+- 次の確認として`notebooks/8_state_aov_category_decomposition.ipynb`を作成した。各カテゴリのGMVを州のユニークな注文数で割り、州の平均注文額をカテゴリ別の構成額に分けてSPとの差を見る。
 - 配送遅延後の案内・フォロー施策は別途検討する。レビュー評価と将来のGMV・再購入との関係、施策費用と効果は未検証
 
 ### 32. 州間の平均注文額差からSP州の改善仮説を整理
 
 #### 確認した結果
 
-- カテゴリGMVを州のユニークな注文数で割った構成額を合計すると、州の平均注文額になる。`state_aov_category_decomposition.ipynb`の結果では、平均注文額の差はPB－SPが92.65、AP－SPが74.50
+- カテゴリGMVを州のユニークな注文数で割った構成額を合計すると、州の平均注文額になる。`8_state_aov_category_decomposition.ipynb`の結果では、平均注文額の差はPB－SPが92.65、AP－SPが74.50
 - PB－SPで構成額の差が大きいカテゴリは、`health_beauty` 19.14、`watches_gifts` 14.94、`computers` 12.26。ただしPBの`computers`は4注文
 - AP－SPでは`computers_accessories` 22.18、`computers` 19.92、`watches_gifts` 14.07、`auto` 12.99。APの各カテゴリ注文数はそれぞれ6、1、7、3件と少ない
 - これらは過去の平均注文額差をカテゴリごとに分けた数字であり、カテゴリの因果効果や販促時の増分GMVではない
@@ -605,7 +605,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 
 #### 追加した分析と図
 
-- `sales_by_category_state.ipynb`にSP・RJ・MGとPB・APのカテゴリ比較表を追加。選んだカテゴリについて、カテゴリ購入割合、カテゴリ注文あたりGMV、州の平均注文額への構成額を注文数とともに表示する
+- `5_sales_by_category_state.ipynb`にSP・RJ・MGとPB・APのカテゴリ比較表を追加。選んだカテゴリについて、カテゴリ購入割合、カテゴリ注文あたりGMV、州の平均注文額への構成額を注文数とともに表示する
 - SP・RJ・MGそれぞれについて、州内カテゴリGMV上位10件とその他の構成比を円グラフにした。全体カテゴリ図と同じ青のグラデーションを使い、`images/Top10_GMV_Share_by_Product_Category_in_SP.png`、`images/Top10_GMV_Share_by_Product_Category_in_RJ.png`、`images/Top10_GMV_Share_by_Product_Category_in_MG.png`に保存した
 - 各円グラフの分母はその州のGMV。円の大きさは州間のGMV規模を示さない
 
@@ -626,7 +626,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 #### 準備したデータと方法
 
 - `20_monthly_category_sales_by_state.sql`を作成。配達済み注文を購入月×顧客州×商品カテゴリで集計し、カテゴリ注文数・カテゴリGMV・カテゴリを含む注文の注文全体GMV合計を出力する
-- `monthly_seasonal_category_by_state.ipynb`を作成。既存の月×州CSVのユニークな注文数を分母に用い、月別と3か月ごとの季節別指標を計算する。季節のAOVは月別AOVの単純平均にせず、金額合計÷注文数合計で求める。カテゴリを1つ選んで全月・全季節の注文数・GMV・AOVを表示するセルも設けた
+- `9_monthly_seasonal_category_by_state.ipynb`を作成。既存の月×州CSVのユニークな注文数を分母に用い、月別と3か月ごとの季節別指標を計算する。季節のAOVは月別AOVの単純平均にせず、金額合計÷注文数合計で求める。カテゴリを1つ選んで全月・全季節の注文数・GMV・AOVを表示するセルも設けた
 - 四季はブラジルの暦に合わせ、夏＝12～2月、秋＝3～5月、冬＝6～8月、春＝9～11月と定義。2016年の初期月を避け、2017年3月～2018年8月の推移を比較する
 - 描画カテゴリは`bed_bath_table`、`health_beauty`、`watches_gifts`、`computers_accessories`。3州比較図はSPを青、PBを橙、APを緑で固定し、線種と記号でも州を区別する。SP拡大図はカテゴリごとに色・線種・記号を変える
 
@@ -662,7 +662,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 ### 36. SPのカテゴリ構成額の変化を注文率と金額に分ける
 
 - SP拡大図をカテゴリごとに青・黄橙・緑・紫へ変更し、線種と記号も残した
-- `monthly_seasonal_category_by_state.ipynb`に、2017年冬と2018年冬の同じ3か月について、州全体の注文数、カテゴリ注文数、カテゴリ注文率、カテゴリGMV、カテゴリ注文あたりカテゴリGMV、州AOVへの構成額を並べるセルを追加した
+- `9_monthly_seasonal_category_by_state.ipynb`に、2017年冬と2018年冬の同じ3か月について、州全体の注文数、カテゴリ注文数、カテゴリ注文率、カテゴリGMV、カテゴリ注文あたりカテゴリGMV、州AOVへの構成額を並べるセルを追加した
 - 等式は「カテゴリGMV ÷ 州注文数 ＝ （カテゴリ注文数 ÷ 州注文数）×（カテゴリGMV ÷ カテゴリ注文数）」。州全体の注文増と、カテゴリを含む注文の割合の変化を区別できる
 - SPの`health_beauty`は2017年冬から2018年冬に、カテゴリ注文数336→1,049件、州注文数4,492→8,617件、カテゴリ注文率7.48→12.17%、カテゴリ注文あたりカテゴリGMV98.14→120.99、AOV構成額7.34→14.73となった
 - この表はカテゴリを含む注文の頻度と金額を示す。カテゴリ内の特定商品・単価・購入数量の内訳は含まないため、商品構成が変わったかの判定には商品ID単位のデータが必要
@@ -674,7 +674,7 @@ Testの低評価2,448件のうち850件を検出し、1,598件を見逃した。
 
 - 前のAOV構成額の図だけではカテゴリ注文数の絶対数が見えないため、SPの4カテゴリについて2017年3月～2018年8月の月別・季節別の注文数とGMVを別の縦軸で並べた
 - 2017年冬と2018年冬のGMV差を「カテゴリ注文数の変化分」と「カテゴリ注文あたりGMVの変化分」に恒等式で分解した。これは原因の推定や施策効果の測定ではない
-- `monthly_seasonal_category_by_state.ipynb`と`src/analysis_plots.py`を更新し、図を`images/SP_Category_Order_Count_and_GMV_Monthly.png`と`images/SP_Category_Order_Count_and_GMV_Seasonal.png`に保存した
+- `9_monthly_seasonal_category_by_state.ipynb`と`src/analysis_plots.py`を更新し、図を`images/SP_Category_Order_Count_and_GMV_Monthly.png`と`images/SP_Category_Order_Count_and_GMV_Seasonal.png`に保存した
 
 #### 確認した結果
 

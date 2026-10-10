@@ -170,7 +170,7 @@ pip install -r requirements.txt
 
 統計的な差は確認されましたが、効果量は小さく、**大規模サンプルでは p 値だけでなく効果量も確認する必要がある**ことを確認しました。
 
-Notebook: [`review_price_analysis.ipynb`](notebooks/review_price_analysis.ipynb)
+Notebook: [`1_review_price_analysis.ipynb`](notebooks/1_review_price_analysis.ipynb)
 
 ---
 
@@ -204,7 +204,7 @@ Notebook: [`review_price_analysis.ipynb`](notebooks/review_price_analysis.ipynb)
 
 ただし、これは観察データ上の関連であり、配送遅延が低評価を引き起こしたことを示すものではありません。
 
-Notebook: [`review_delivery_analysis.ipynb`](notebooks/review_delivery_analysis.ipynb)
+Notebook: [`2_review_delivery_analysis.ipynb`](notebooks/2_review_delivery_analysis.ipynb)
 
 ## 7. 低評価予測の基準モデル
 
@@ -259,7 +259,7 @@ Test データでは、低評価 2,448 件のうち 850 件を検出しました
 
 そのため、この Baseline モデルは「購入時点の予測モデル」ではなく、**配送完了後〜レビュー投稿前のフォロー対象候補を考えるモデル**として解釈する方が自然です。
 
-Notebook: [`predict_low_review.ipynb`](notebooks/predict_low_review.ipynb)
+Notebook: [`3_predict_low_review.ipynb`](notebooks/3_predict_low_review.ipynb)
 
 ---
 
@@ -293,7 +293,7 @@ AOV = GMV / unique orders
   - GMV: 5,067,633.16
   - AOV: 125.12
 
-Notebook: [`sales_baseline_by_month_state.ipynb`](notebooks/sales_baseline_by_month_state.ipynb)
+Notebook: [`4_sales_baseline_by_month_state.ipynb`](notebooks/4_sales_baseline_by_month_state.ipynb)
 
 ### 8.2 州別の注文金額比較
 
@@ -317,7 +317,7 @@ Notebook: [`sales_baseline_by_month_state.ipynb`](notebooks/sales_baseline_by_mo
 
 小規模州では少数注文の影響が大きいため、平均注文額が高いことだけで施策対象とは判断していません。
 
-Notebook: [`order_level_sales_by_state.ipynb`](notebooks/order_level_sales_by_state.ipynb)
+Notebook: [`6_order_level_sales_by_state.ipynb`](notebooks/6_order_level_sales_by_state.ipynb)
 
 ---
 
@@ -346,7 +346,7 @@ Notebook: [`order_level_sales_by_state.ipynb`](notebooks/order_level_sales_by_st
 
 全体と州内で上位カテゴリが異なり、地域によって商品構成が異なる可能性があることを確認しました。
 
-Notebook: [`sales_by_category_state.ipynb`](notebooks/sales_by_category_state.ipynb)
+Notebook: [`5_sales_by_category_state.ipynb`](notebooks/5_sales_by_category_state.ipynb)
 
 ---
 
@@ -416,7 +416,7 @@ SP の `health_beauty` では 2017 年冬 → 2018 年冬に以下の変化を�
 
 このことから、SP州のhealth_beautyは、2018年冬には**より多くの注文で買われるようになり、かつ1注文あたりのカテゴリGMVも高くなった**ため、州全体の平均注文額への寄与が大きくなったと解釈できます。
 
-Notebook: [`monthly_seasonal_category_by_state.ipynb`](notebooks/monthly_seasonal_category_by_state.ipynb)
+Notebook: [`9_monthly_seasonal_category_by_state.ipynb`](notebooks/9_monthly_seasonal_category_by_state.ipynb)
 
 ---
 
