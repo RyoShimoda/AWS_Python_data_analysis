@@ -3,5 +3,33 @@
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "OpenAI.chatgpt",
+                "charliermarsh.ruff",
+                "usernamehw.errorlens",
+                "mechatroner.rainbow-csv",
+                "pkief.material-icon-theme",
+                "ms-azuretools.vscode-containers"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.formatOnPaste": true,
+                "editor.rulers": [
+                    80
+                ],
+                "files.insertFinalNewline": true,
+                "files.trimTrailingWhitespace": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff",
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll.ruff": "explicit",
+                        "source.organizeImports.ruff": "explicit"
+                    }
+                }
+            }
+        }
     }
 }

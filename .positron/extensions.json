@@ -1,5 +1,6 @@
 {
     "recommendations": [
+        "OpenAI.chatgpt",
         "charliermarsh.ruff",
         "ms-python.mypy-type-checker",
         // エラーの視認性を上げる
