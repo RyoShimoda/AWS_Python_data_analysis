@@ -783,3 +783,42 @@ Dockerによる分析環境を構築した。
 
 ```bash
 docker build --no-cache -f .devcontainer/Dockerfile -t aws-python-data-analysis-dev .
+```
+
+## 2026-10-10
+### 昨日の続き
+positron環境ではなく、VSCode環境でdocker、Dev Containersを使った環境構築を実施。
+.positronフォルダのjsonファイルをそのまま流用し、VSCodeようにJupyterの拡張機能などを追加。
+
+### 40. 低評価予測モデルの追加特徴量候補を整理
+
+#### 目的
+
+基準モデルで使用している
+
+- `total_price`
+- `total_freight`
+- `delivery_delay_days`
+
+に加えて、注文・地域・購入時期に関する特徴量を追加し、
+低評価予測性能を改善できるか検討する。
+
+予測時点は、
+
+「配送完了後、レビュー投稿前」
+
+とし、この時点までに利用可能な情報のみを特徴量として使用する。
+
+#### 現在の低評価予測データ
+
+既存の低評価予測用データを確認した。
+
+- 行数：95,830
+- 列数：5
+
+```text
+order_id
+review_score
+total_price
+total_freight
+delivery_delay_days
