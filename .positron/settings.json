@@ -3,6 +3,7 @@
         "%load_ext autoreload",
         "%autoreload 2"
     ],
+    "notebook.output.wordWrap": false,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
     "editor.rulers": [
