@@ -6,9 +6,7 @@
     "notebook.output.wordWrap": false,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
-    "editor.rulers": [
-        80
-    ],
+    "editor.wordWrap": "off",
     "files.insertFinalNewline": true,
     "workbench.keybindings.rstudioKeybindings": true,
     "[python]": {
