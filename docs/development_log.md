@@ -1249,3 +1249,105 @@ days_since_previous_order
 - ロジスティック回帰の最終的なValidation性能を確認
 - その後、Random Forest・Boosting系モデルと比較
 - 最終モデル決定後にHoldoutで最終評価
+
+#### 時期特徴量の表現方法を比較
+
+`purchase_month_num` を1〜12の数値として扱う方法に加えて、
+時期情報の表現方法を見直した。
+
+まず、月をブラジルの季節区分に変換し、
+`season` をカテゴリ特徴量としてOne-Hot Encodingした。
+
+```text
+Summer : 12, 1, 2
+Autumn : 3, 4, 5
+Winter : 6, 7, 8
+Spring : 9, 10, 11
+```
+
+Validationで評価した結果、
+
+```text
+Threshold    0.25
+Precision    0.5927
+Recall       0.4905
+F1           0.5368
+ROC-AUC      0.7656
+```
+
+となり、
+`purchase_month_num` を使用したモデルよりF1が低下した。
+
+季節への変換では12か月の情報を4区分へ圧縮するため、
+月ごとの細かな違いが失われたことが一因と考えられる。
+
+また、Validation期間が2018-01〜2018-04であり、
+含まれる季節が限定される点も考慮する必要がある。
+
+#### 月の周期性をsin / cosで表現
+
+月ごとの情報を維持しながら、
+12月と1月が隣接する周期性を表現するため、
+月をsin / cosへ変換した。
+
+```text
+month_sin = sin(2π × purchase_month_num / 12)
+month_cos = cos(2π × purchase_month_num / 12)
+```
+
+これにより、
+月を円周上の座標として表現し、
+12月と1月を近い値としてモデルへ与えられる。
+
+`purchase_month_num` を除外し、
+`month_sin` と `month_cos` を使用したモデルをValidationで評価した。
+
+```text
+Threshold    0.26
+Precision    0.6117
+Recall       0.5021
+F1           0.5515
+ROC-AUC      0.7670
+```
+
+時期特徴量の表現方法を比較すると、
+
+```text
+purchase_month_num
+F1          0.5511
+ROC-AUC     0.7667
+
+season
+F1          0.5368
+ROC-AUC     0.7656
+
+month_sin / month_cos
+F1          0.5515
+ROC-AUC     0.7670
+```
+
+となった。
+
+`month_sin` / `month_cos` による改善幅は小さいものの、
+月を単純な1〜12の数値として扱うよりも周期構造を適切に表現でき、
+性能も悪化しなかった。
+
+そのため、
+今後のモデルでは時期特徴量として
+
+```text
+month_sin
+month_cos
+```
+
+を使用する方針とする。
+
+#### 次の作業
+
+次の特徴量群として、
+注文の商品カテゴリ情報を追加する。
+
+1注文に複数カテゴリが含まれる可能性があるため、
+まずは注文内でGMVが最も大きいカテゴリを
+`main_category` として注文単位に作成し、
+低評価予測性能への影響を検証する。
