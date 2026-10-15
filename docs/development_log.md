@@ -791,7 +791,6 @@ positron環境ではなく、VSCode環境でdocker、Dev Containersを使った�
 .positronフォルダのjsonファイルをそのまま流用し、VSCodeようにJupyterの拡張機能などを追加。
 
 ### 40. 低評価予測モデルの追加特徴量候補を整理
-
 #### 目的
 
 基準モデルで使用している
@@ -822,3 +821,431 @@ review_score
 total_price
 total_freight
 delivery_delay_days
+```
+
+## 2026-10-14
+### 41. 低評価予測用の追加特徴量作成と時系列評価
+
+#### 注文構成特徴量の追加
+
+低評価予測モデルの改善に向けて、
+注文構成を表す以下の特徴量をAthenaで注文単位に作成した。
+
+- `item_count`
+- `category_count`
+
+既存の低評価予測データへ `order_id` で結合した結果、
+行数は95,830件のまま維持され、
+両特徴量に欠損はなかった。
+
+要約統計量は以下の通り。
+
+```text
+                 item_count    category_count
+count          95830.000000      95830.000000
+mean               1.141281          1.008275
+std                0.534097          0.092641
+min                1.000000          1.000000
+25%                1.000000          1.000000
+50%                1.000000          1.000000
+75%                1.000000          1.000000
+max               21.000000          3.000000
+```
+
+大部分の注文は1商品・1カテゴリであり、
+複数商品・複数カテゴリを含む注文は比較的少ないことを確認した。
+
+#### 目的変数の確認
+
+レビュー評価が2以下の場合を低評価として、
+
+```text
+low_review = 1 : review_score <= 2
+low_review = 0 : review_score >= 3
+```
+
+と定義した。
+
+件数と割合は以下の通り。
+
+```text
+low_review = 0    83,590件    87.23%
+low_review = 1    12,240件    12.77%
+```
+
+基準モデル作成時と同じ低評価率であることを確認した。
+
+#### 購入時期の確認
+
+既存の `order_level_sales_by_state.csv` から取得した
+`purchase_month` は6注文で欠損していた。
+
+時系列分割には購入年月が必要なため、
+この6件を除外し、95,824注文をモデル評価対象とした。
+
+月別に低評価率を確認したところ、
+時期によって低評価率に差がみられた。
+
+特に、
+
+```text
+2018-02    19.26%
+2018-03    21.13%
+```
+
+と高かった一方、
+
+```text
+2018-05    10.76%
+2018-06     9.98%
+2018-07     9.66%
+2018-08     9.54%
+```
+
+と、その後は低下していた。
+
+#### 時系列Train / Validation / Holdoutの作成
+
+ランダム分割ではなく、
+過去データから将来データを予測する状況に近づけるため、
+以下の期間で時系列分割を行った。
+
+```text
+Train
+2016-09 ～ 2017-12
+43,362件
+低評価率 12.08%
+
+Validation
+2018-01 ～ 2018-04
+27,220件
+低評価率 16.43%
+
+Holdout
+2018-05 ～ 2018-08
+25,242件
+低評価率 10.00%
+```
+
+合計は95,824件となり、
+時系列分割前の対象件数と一致した。
+
+Holdoutは最終評価まで使用せず、
+特徴量選択やしきい値調整にはTrainとValidationのみを使用する方針とした。
+
+#### 時系列分割でのBaseline再評価
+
+基準モデルでは以下の3特徴量を使用した。
+
+```text
+total_price
+total_freight
+delivery_delay_days
+```
+
+Trainでモデルを学習し、
+ValidationでF1が最大となるしきい値を探索した。
+
+最適しきい値は0.23であった。
+
+```text
+Threshold    0.23
+Precision    0.6559
+Recall       0.4614
+F1           0.5417
+ROC-AUC      0.7415
+```
+
+以前のランダム分割による評価よりもROC-AUCは高かったが、
+期間ごとの低評価率が異なるため、
+単純に時系列分割によって性能が向上したとは判断しない。
+
+以降は、この時系列Validationでの性能を
+追加特徴量モデルの比較基準とする。
+
+#### Improved 1の特徴量設計
+
+Baselineに以下の特徴量を追加することとした。
+
+```text
+log_freight_ratio
+item_count
+category_count
+purchase_month_num
+customer_state
+```
+
+`freight_ratio` は一部に極端な値が存在したため、
+
+```text
+log_freight_ratio = log1p(freight_ratio)
+```
+
+として対数変換した値を使用する。
+
+数値特徴量には `StandardScaler`、
+`customer_state` には `OneHotEncoder` を適用する。
+
+また、前処理とロジスティック回帰を
+`ColumnTransformer` と `Pipeline` で一体化し、
+Trainで学習した前処理をValidationへ適用する構成とした。
+
+---
+
+## 2026-10-15
+
+### 42. 追加特徴量モデルと支払い特徴量の検証
+
+#### Improved 1のValidation評価
+
+Baselineに注文構成・地域・時期の特徴量を追加した
+Improved 1をValidationデータで評価した。
+
+使用した特徴量は以下の通り。
+
+```text
+total_price
+total_freight
+delivery_delay_days
+log_freight_ratio
+item_count
+category_count
+purchase_month_num
+customer_state
+```
+
+F1が最大となるしきい値は0.22であった。
+
+```text
+Threshold    0.22
+Precision    0.6160
+Recall       0.4992
+F1           0.5515
+ROC-AUC      0.7661
+```
+
+Baselineと比較すると、
+
+```text
+Baseline
+F1          0.5417
+ROC-AUC     0.7415
+
+Improved 1
+F1          0.5515
+ROC-AUC     0.7661
+```
+
+となり、
+F1・ROC-AUCともに改善した。
+
+Precisionは低下した一方でRecallは上昇しており、
+誤検知を多少増やす代わりに、
+低評価注文をより多く検出できるモデルとなった。
+
+#### 支払い特徴量の作成
+
+さらに支払い情報による改善を検証するため、
+Athenaで注文単位の支払い情報を集約した。
+
+作成した特徴量は以下の通り。
+
+```text
+payment_count
+payment_type_count
+max_payment_installments
+main_payment_type
+```
+
+支払いデータは99,440注文で、
+`order_id` の重複は0件であった。
+
+主な支払い方法は以下の通り。
+
+```text
+credit_card    74,975
+boleto         19,784
+voucher         3,151
+debit_card      1,527
+not_defined         3
+```
+
+低評価予測データへ結合後も、
+行数は95,830件のまま維持された。
+
+支払い情報が存在しない注文は1件であった。
+
+また、
+
+```text
+max_payment_installments = 0
+```
+
+の注文が2件存在したため、
+0を有効な分割回数とはみなさず欠損値として扱った。
+
+#### Improved 2の前処理
+
+支払い特徴量には欠損が存在するため、
+前処理Pipelineを拡張した。
+
+数値特徴量：
+
+```text
+欠損値
+↓
+中央値で補完
+↓
+StandardScaler
+```
+
+カテゴリ特徴量：
+
+```text
+欠損値
+↓
+"missing" として補完
+↓
+OneHotEncoder
+```
+
+これらを `ColumnTransformer` と `Pipeline` に組み込み、
+ロジスティック回帰まで一体化した。
+
+#### Improved 2のValidation評価
+
+Improved 1に以下の支払い特徴量を追加した。
+
+```text
+payment_count
+payment_type_count
+max_payment_installments
+main_payment_type
+```
+
+ValidationでF1が最大となるしきい値は0.21であった。
+
+```text
+Threshold    0.21
+Precision    0.5937
+Recall       0.5142
+F1           0.5511
+ROC-AUC      0.7667
+```
+
+これまでのモデルを比較すると、
+
+```text
+Baseline
+F1          0.5417
+ROC-AUC     0.7415
+
+Improved 1
+F1          0.5515
+ROC-AUC     0.7661
+
+Improved 2
+F1          0.5511
+ROC-AUC     0.7667
+```
+
+となった。
+
+支払い特徴量を追加するとROC-AUCはわずかに上昇したが、
+F1はほぼ変化せず、
+Improved 1に対する明確な性能改善は確認できなかった。
+
+そのため、
+支払い特徴量には一定の情報が含まれる可能性はあるものの、
+現時点では主要な性能改善要因とは判断しない。
+
+#### 時期特徴量の見直し
+
+現在は購入月を、
+
+```text
+purchase_month_num = 1 ～ 12
+```
+
+という数値特徴量として使用している。
+
+しかしロジスティック回帰では、
+この表現によって月を連続的な大小関係として扱う。
+
+実際には12月と1月は隣接しており、
+月による低評価リスクが単調に変化するとは限らない。
+
+そのため、
+`purchase_month_num` の代わりに
+季節をカテゴリ変数としてOne-Hot Encodingする方法を検証する。
+
+ブラジルの季節区分は以下とする。
+
+```text
+Summer : 12, 1, 2
+Autumn : 3, 4, 5
+Winter : 6, 7, 8
+Spring : 9, 10, 11
+```
+
+#### 今後追加する特徴量の検討
+
+商品関連では、
+
+```text
+商品カテゴリ
+注文内の代表カテゴリ
+複数カテゴリ情報
+```
+
+を候補とする。
+
+また、顧客ごとの過去購買行動として、
+
+```text
+prior_order_count
+is_repeat_customer
+prior_customer_gmv
+prior_avg_order_value
+days_since_previous_order
+```
+
+なども候補とする。
+
+顧客履歴特徴量では、
+対象注文より未来の購買情報を使用するとデータリークになるため、
+必ず対象注文より前の履歴のみを用いて算出する。
+
+#### モデル選択方針
+
+現時点ではロジスティック回帰での検証を継続する。
+
+まず、
+
+- 時期情報
+- 商品カテゴリ
+- 顧客履歴
+
+まで特徴量を追加し、
+ロジスティック回帰で得られる性能を十分に検証する。
+
+その後、
+同一の特徴量セットを用いて、
+
+- Random Forest
+- Gradient Boosting系モデル
+
+などの分類手法を比較する。
+
+これにより、
+特徴量追加による改善と、
+分類アルゴリズム変更による改善を分けて評価する。
+
+#### 次の作業
+
+- `purchase_month_num` を季節カテゴリに置き換えたモデルを検証
+- 商品カテゴリ特徴量を追加
+- 顧客の過去購買履歴特徴量を追加
+- ロジスティック回帰の最終的なValidation性能を確認
+- その後、Random Forest・Boosting系モデルと比較
+- 最終モデル決定後にHoldoutで最終評価
