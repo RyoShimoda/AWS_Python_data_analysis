@@ -1351,3 +1351,136 @@ month_cos
 まずは注文内でGMVが最も大きいカテゴリを
 `main_category` として注文単位に作成し、
 低評価予測性能への影響を検証する。
+
+### 43. 商品カテゴリ特徴量を追加して低評価予測を検証
+
+#### 商品カテゴリ特徴量の作成
+
+注文の商品カテゴリ情報を低評価予測に追加するため、
+Athenaで注文ごとの代表カテゴリを作成した。
+
+商品カテゴリ名は英語表記を優先し、
+翻訳名が存在しない場合は元のカテゴリ名、
+カテゴリ自体が存在しない場合は `uncategorized` とした。
+
+1注文に複数の商品カテゴリが含まれる場合は、
+注文内でGMVが最も大きいカテゴリを
+
+```text
+main_category
+```
+
+として採用した。
+
+同額のカテゴリが存在する場合は、
+カテゴリ名の昇順で1つを選択した。
+
+作成したカテゴリ特徴量データは以下の通り。
+
+```text
+注文数              98,666
+order_id重複数           0
+main_category欠損数      0
+```
+
+主なカテゴリは以下であった。
+
+```text
+bed_bath_table              9,350
+health_beauty               8,802
+sports_leisure              7,682
+computers_accessories       6,671
+furniture_decor             6,332
+housewares                  5,821
+watches_gifts               5,606
+telephony                   4,179
+auto                        3,879
+toys                        3,871
+```
+
+モデル用データと `order_id` で結合した結果、
+時系列評価対象95,824件を維持し、
+`main_category` に欠損は発生しなかった。
+
+#### Train / Validation間のカテゴリ確認
+
+カテゴリ数を確認した結果、
+
+```text
+Trainカテゴリ数         73
+Validationカテゴリ数    72
+Validationのみのカテゴリ 0
+```
+
+であった。
+
+Validation期間にTrainで未出現のカテゴリは存在しなかった。
+
+#### 商品カテゴリを追加したモデル
+
+前モデルの特徴量に、
+
+```text
+main_category
+```
+
+を追加し、
+One-Hot Encodingした上でロジスティック回帰を学習した。
+
+ValidationでF1が最大となるしきい値は0.25であった。
+
+```text
+Threshold    0.25
+Precision    0.5669
+Recall       0.5104
+F1           0.5372
+ROC-AUC      0.7704
+```
+
+直前の `month_sin` / `month_cos` モデルと比較すると、
+
+```text
+sin / cosモデル
+F1          0.5515
+ROC-AUC     0.7670
+
++ main_category
+F1          0.5372
+ROC-AUC     0.7704
+```
+
+となった。
+
+商品カテゴリを追加するとROC-AUCは上昇した一方、
+Precisionが低下し、F1は悪化した。
+
+この結果から、
+商品カテゴリには低評価注文を順位付けするための情報が
+含まれている可能性があるが、
+現在のロジスティック回帰ではF1改善には結びつかなかった。
+
+商品カテゴリは今後の特徴量候補として保持し、
+顧客履歴特徴量を追加した後に、
+ロジスティック回帰の最終特徴量セットとして採用するか判断する。
+
+また、Random ForestやBoosting系モデルでは、
+商品カテゴリと他特徴量との非線形な関係を利用できる可能性があるため、
+モデル比較時にも再検証する。
+
+#### 次の作業
+
+`customer_unique_id` を用いて、
+対象注文より前の購買履歴のみから顧客特徴量を作成する。
+
+候補は以下とする。
+
+```text
+prior_order_count
+is_repeat_customer
+prior_customer_gmv
+prior_avg_order_value
+days_since_previous_order
+```
+
+未来の購買情報を含めないよう、
+各注文時点より前の情報のみを用いて算出する。
