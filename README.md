@@ -112,7 +112,7 @@ Amazon Athena / SQL
 AWS_Python_data_analysis/
 ├── .devcontainer/
 │   ├── gpu/
-│   │   └── devcontainer.json       # GPU用設定（Git追加予定）
+│   │   └── devcontainer.json       # GPU用Dev Container設定
 │   ├── devcontainer.json           # CPU用標準設定
 │   └── Dockerfile                  # 共通のPython実行環境
 ├── .positron/
