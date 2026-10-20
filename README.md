@@ -104,57 +104,177 @@ Amazon Athena / SQL
 
 ## 5. リポジトリ構成
 
+本プロジェクトでは、SQLによるデータ加工、Python・Rによる統計解析、機械学習、結果の可視化を分離し、分析過程を再現・追跡できる構成としています。
+
+### 5.1 ディレクトリ構成
+
 ```text
 AWS_Python_data_analysis/
 ├── .devcontainer/
-│   ├── devcontainer.json
-│   └── Dockerfile
+│   ├── gpu/
+│   │   └── devcontainer.json       # GPU用設定（Git追加予定）
+│   ├── devcontainer.json           # CPU用標準設定
+│   └── Dockerfile                  # 共通のPython実行環境
+├── .positron/
+│   ├── extensions.json
+│   ├── launch.json
+│   └── settings.json
+├── data/                            # ローカルデータ（Git管理対象外）
 ├── docs/
-│   └── development_log.md
-├── images/
-├── notebooks/
+│   └── development_log.md          # 開発履歴
+├── images/                          # 分析結果の画像（25点）
+├── notebooks/                       # Notebook 13本・Rスクリプト1本
 ├── sql/
-│   └── athena/
-├── src/
-├── data/                  # Git管理対象外
+│   └── athena/                     # AWS Athena用SQL（29本）
+├── src/                             # 共通Pythonモジュール
+│   ├── __init__.py
+│   ├── README.md
+│   ├── analysis_plots.py
+│   ├── bootstrap.py
+│   ├── model_metrics.py
+│   ├── model_summary.py
+│   ├── model_training.py
+│   ├── order_value_state_plots.py
+│   ├── project_paths.py
+│   ├── review_stats.py
+│   └── sales_metrics.py
 ├── .dockerignore
 ├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
 
-- `notebooks/`: 分析の問い・入力・結果・解釈
-- `src/`: 再利用する集計・統計・モデル評価・描画関数
-- `sql/athena/`: S3 上のデータを分析用に加工する SQL
-- `docs/development_log.md`: 試行錯誤を含む開発過程
-- `images/`: README / Notebook で使用する図
-- `data/`: ローカル分析用データ。GitHub には含めない
+※ 上記は主要なディレクトリとファイルを示しています。`data/` はGit管理対象外であり、GitHubには含まれません。
 
+### 5.2 Notebookの構成
 
-### 分析環境の再現方法
+`notebooks/` には、分析目的・処理内容・実行結果・解釈を記録しています。
 
-本プロジェクトでは、Python分析環境の再現性を高めるため、
-`requirements.txt` に加えてDocker環境を用意しています。
+| ファイル | 主な分析内容 |
+|---|---|
+| `1_review_price_analysis.ipynb` | レビュー評価と注文金額・送料の関係 |
+| `2_review_delivery_analysis.ipynb` | レビュー評価と配送遅延の関係 |
+| `3_predict_low_review.ipynb` | 低評価予測モデルの基礎分析 |
+| `4_sales_baseline_by_month_state.ipynb` | 月別・州別の売上基礎分析 |
+| `5_sales_by_category_state.ipynb` | 商品カテゴリ別・州別売上分析 |
+| `6_order_level_sales_by_state.ipynb` | 注文単位の州別売上分析 |
+| `7_promotion_candidate_by_state_category.ipynb` | 州・カテゴリ別の販促候補分析 |
+| `8_state_aov_category_decomposition.ipynb` | 州別AOVのカテゴリ構成分析 |
+| `9_monthly_seasonal_category_by_state.ipynb` | 月別・季節別のカテゴリ動向 |
+| `10_sp_product_mix_winter_comparison.ipynb` | サンパウロ州の商品構成と冬季の比較 |
+| `11_low_review_feature_engineering.ipynb` | 低評価予測の特徴量設計・改善 |
+| `12_low_review_future_purchase_analysis.ipynb` | 低評価と将来の再購入・GMVの関連分析 |
+| `13_low_review_model_comparison.ipynb` | 低評価予測の特徴量セット・モデル比較 |
+| `review_score_analysis.R` | Rによるレビュー評価の統計解析 |
 
-### Docker構成
+### 5.3 SQLの構成
 
-```text
-.devcontainer/
-├── devcontainer.json
-└── Dockerfile
+`sql/athena/` では、AWS S3上のOlistデータをAthenaで加工し、分析用テーブルや特徴量を生成します。
 
-.dockerignore
-requirements.txt
-```
+SQLは処理の順序に沿って連番で管理しています。
 
-### ローカルPython環境
+| SQL番号 | 主な用途 |
+|---|---|
+| 01〜08 | データベース・外部テーブルの作成、基本データの結合 |
+| 09〜13 | レビュー評価、注文金額、送料、配送遅延の集計 |
+| 14〜15 | 月別・州別の売上集計とデータ件数の照合 |
+| 16〜21 | 商品カテゴリの翻訳・地域別売上・季節性・商品構成分析 |
+| 22〜25 | 注文構成・支払い・商品カテゴリ・顧客履歴の特徴量生成 |
+| 26 | 購入期間の確認 |
+| 27〜29 | レビュー投稿を基準とする将来購買分析、再購入関連の調整変数生成 |
 
-必要なPythonパッケージは以下のコマンドでインストールできます。
+主に、注文ID単位で重複のない分析データを生成し、Pythonでの統計解析や機械学習に利用しています。
+
+### 5.4 共通Pythonモジュール
+
+再利用可能な処理は `src/` に配置しています。
+
+| ファイル | 役割 |
+|---|---|
+| `analysis_plots.py` | 分析結果の可視化 |
+| `bootstrap.py` | ブートストラップによる推定 |
+| `model_metrics.py` | 分類モデルの評価指標・しきい値評価 |
+| `model_summary.py` | モデル結果の集計・整理 |
+| `model_training.py` | 前処理とモデル学習 |
+| `order_value_state_plots.py` | 注文金額・地域別分析の可視化 |
+| `project_paths.py` | ディレクトリパスの共通管理 |
+| `review_stats.py` | レビュー評価に関する統計処理 |
+| `sales_metrics.py` | 売上関連指標の集計 |
+| `README.md` | 共通モジュールの説明 |
+
+共通処理をモジュール化することで、Notebook間の重複コードを減らし、同じ評価・集計方法を再利用できるようにしています。
+
+### 5.5 分析結果の画像
+
+`images/` には、各Notebookで生成した図を保存しています。
+
+画像は主に次のテーマに分類できます。
+
+- レビュー評価と注文金額・送料・配送遅延
+- 月別GMV・注文数・AOV
+- 州別売上・注文金額分布
+- 商品カテゴリ別GMVと売上構成比
+- 州別の商品構成と季節変動
+
+図表はREADMEおよびNotebookから参照し、分析結果を視覚的に確認できるようにしています。
+
+### 5.6 分析環境の再現方法
+
+本プロジェクトではPython 3.12を使用し、`requirements.txt` とDocker Dev Containersによって実行環境を管理しています。
+
+#### CPU・GPU対応のDocker環境
+
+CPU用とGPU用の2種類のDev Container設定を用意しています。
+
+| 環境 | 設定ファイル | 用途 |
+|---|---|---|
+| CPU（標準） | `.devcontainer/devcontainer.json` | 統計解析・通常の機械学習 |
+| GPU | `.devcontainer/gpu/devcontainer.json` | NVIDIA GPUを利用した学習 |
+
+両構成は共通のDockerfileと `requirements.txt` を使用します。
+
+GPU環境では、コンテナ起動時に `--gpus all` を指定します。
+
+GPUを使用しない場合は、CPU用のDev Containerを選択します。
+
+#### GPU動作確認
+
+NVIDIA GeForce RTX 4070 Tiを使用して、以下の動作を確認しました。
+
+- Windows・WSL 2・Docker Desktop経由でのGPU認識
+- XGBoost 3.4.1によるGPU学習
+- CatBoost 1.2.10によるGPU学習
+- LightGBM 4.7.0のインポート成功
+
+43,000件・数値特徴量20個・決定木500本の人工分類データによるベンチマークでは、次の結果でした。
+
+| モデル | CPU実行時間 | GPU実行時間 |
+|---|---:|---:|
+| XGBoost | 0.742秒 | 0.784秒 |
+| CatBoost | 1.358秒 | 16.134秒 |
+
+今回の条件ではGPUによる高速化を確認できなかったため、CPUを標準環境としています。
+
+なお、測定は各1回であり、実際のOlistデータで同様の速度差が生じることを保証するものではありません。
+
+#### ローカルPython環境
+
+Dockerを使用しない場合は、Python 3.12環境で以下を実行します。
 
 ```bash
-pip install -r requirements.txt
-
+python -m pip install -r requirements.txt
 ```
+
+Linux環境では、LightGBMの利用にOpenMPライブラリ（`libgomp1`）が必要になる場合があります。Dockerfileでは、この依存関係を管理しています。
+
+#### データの管理
+
+分析用のCSVなどは `data/` に保存しますが、Git管理対象外としています。
+
+このため、GitHubのコードを取得してPython環境を構築するだけでは、Notebookのすべての分析を直ちに再実行できるわけではありません。
+
+元データの取得と、AWS Athenaによる集計・特徴量生成が必要です。
+
 ---
 
 ## 6. 主な分析結果
