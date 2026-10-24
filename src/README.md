@@ -11,6 +11,15 @@ Notebookには「何を確かめるか」「関数へ渡すデータ」「結果
 | `analysis_plots.py` | 複数Notebookで使う箱ひげ図・カテゴリ図・推移図 |
 | `order_value_state_plots.py` | 注文単位の州別箱ひげ図を単独で保存する入口 |
 
+## 分類モデルの共通学習関数
+
+- `build_logistic_pipeline()`：数値変数の欠損補完・標準化とカテゴリ変数のOne-Hot Encodingを含むPipelineを構築
+- `train_logistic_model()`：ロジスティック回帰を学習し、検証データの予測確率を取得
+- `train_random_forest_model()`：共通前処理を利用したRandom Forestの学習
+- `train_classifier_model()`：分類器を引数で指定し、XGBoost・LightGBM・CatBoostなどを共通のインターフェースで学習
+
+モデル比較時は、Notebook内に同じ前処理を重複実装せず、これらの関数を利用する。
+
 ## 指標の定義
 
 - 州の平均注文額：州GMV合計 ÷ 州のユニークな注文数。月平均AOVの単純平均は使いません。

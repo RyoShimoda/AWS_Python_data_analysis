@@ -4,7 +4,9 @@ from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
+from sklearn.base import clone
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -79,3 +81,69 @@ def train_logistic_model(
     model.fit(train[features], train[target])
     positive_probability = model.predict_proba(validation[features])[:, 1]
     return model, validation[target], positive_probability
+
+
+def train_random_forest_model(
+    train,
+    validation,
+    numeric_features,
+    categorical_features,
+    *,
+    target="low_review",
+    n_estimators=300,
+    min_samples_leaf=5,
+    random_state=42,
+):
+    """Random Forestを学習し、学習済みモデル・正解・予測確率を返す。"""
+
+    features = list(numeric_features) + list(categorical_features)
+
+    # 既存の前処理Pipelineを再利用
+    pipeline = build_logistic_pipeline(
+        numeric_features,
+        categorical_features,
+    )
+
+    # ロジスティック回帰をRandom Forestに置き換える
+    pipeline.set_params(
+        model=RandomForestClassifier(
+            n_estimators=n_estimators,
+            min_samples_leaf=min_samples_leaf,
+            class_weight="balanced_subsample",
+            random_state=random_state,
+            n_jobs=-1,
+        )
+    )
+
+    pipeline.fit(train[features], train[target])
+
+    probabilities = pipeline.predict_proba(validation[features])[:, 1]
+
+    return pipeline, validation[target], probabilities
+
+
+def train_classifier_model(
+    train,
+    validation,
+    numeric_features,
+    categorical_features,
+    classifier,
+    *,
+    target="low_review",
+):
+    """既存の前処理を使って分類器を学習・評価する。"""
+
+    features = list(numeric_features) + list(categorical_features)
+
+    pipeline = build_logistic_pipeline(
+        numeric_features,
+        categorical_features,
+    )
+
+    pipeline.set_params(model=clone(classifier))
+
+    pipeline.fit(train[features], train[target])
+
+    probabilities = pipeline.predict_proba(validation[features])[:, 1]
+
+    return pipeline, validation[target], probabilities
