@@ -99,8 +99,8 @@ Amazon Athena / SQL
 
 - **AWS:** Amazon S3、Amazon Athena
 - **SQL:** Athena用クエリ
-- **Python**：pandas、NumPy、SciPy、scikit-learn、matplotlib、scikit-posthocs など
-- **分析手法:** 記述統計、箱ひげ図、Kruskal–Wallis検定、Dunn検定（Bonferroni・Holm補正）、ロジスティック回帰
+- **Python**： pandas、NumPy、SciPy、scikit-learn、XGBoost、LightGBM、CatBoost、matplotlib、scikit-posthocs など
+- **分析手法:** 記述統計、統計的仮説検定、ロジスティック回帰、Random Forest、勾配ブースティング、時系列クロスバリデーション
 - **開発環境**：Positron、VSCode、Jupyter Notebook
 - **環境管理**：Docker、requirements.txt
 - **バージョン管理**：Git、GitHub、SourceTree
@@ -445,7 +445,7 @@ Test データでは、低評価 2,448 件のうち 850 件を検出しました
 
 Notebook: [`3_predict_low_review.ipynb`](notebooks/3_predict_low_review.ipynb)
 
-### 7.6 時系列Validationによる特徴量改善
+### 7.6 時系列Validationによる特徴量改善（旧評価：購入月基準）
 
 将来の注文に対する予測性能を評価するため、時系列によるTrain / Validation / Holdout分割を導入しました。
 
@@ -756,7 +756,7 @@ SP州の`health_beauty`について、2017年冬と2018年冬の商品構成を�
 
 一方、Fold 4ではCatBoostがROC-AUC 0.6490、AP 0.2167となり、両指標で最良でした。
 
-今回の結果は各アルゴリズムの最終的な性能を示すものではありません。ハイパーパラメータや特徴量セットは、今後追加で検証します。
+本節はModel Aの特徴量を使用した初期比較です。特徴量セットA〜Eの比較結果は9.6節に記載しています。ハイパーパラメータの最適化は未実施です。
 
 ### 9.6 特徴量セットの比較と今後の改善
 
