@@ -23,6 +23,7 @@ Notebookには「何を確かめるか」「関数へ渡すデータ」「結果
 - `train_random_forest_model()`：共通前処理を利用したRandom Forestの学習
 - `train_classifier_model()`：分類器を引数で指定し、XGBoost・LightGBM・CatBoostなどを共通のインターフェースで学習
 - `evaluate_parameter_candidates()`（`model_search.py`）：指定したハイパーパラメータ候補を時系列CVで評価し、Fold別結果と平均指標を返す
+- `ranking_metrics_at_k()`（`model_metrics.py`）：予測確率上位K件のPrecision・Recall・Liftを計算
 
 モデル比較時は、Notebook内に同じ前処理を重複実装せず、これらの関数を利用する。
 

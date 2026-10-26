@@ -75,13 +75,13 @@ Amazon Athena / SQL
 - 特徴量セットA〜Eの比較、顧客履歴特徴量の時系列整合性修正
 
 **現在**
-- CatBoost Model Cのハイパーパラメータ調整を完了
+- CatBoost Model Cのハイパーパラメータ調整とランキング評価を完了
 - 4-Fold平均：ROC-AUC 0.6217、AP 0.1757
-- Precision@Kなどの業務指標による評価へ移行
+- Precision@100：37.50%、Lift@100：4.11倍
 
 **今後**
-- Precision@K・Recall@Kによる評価
 - 予測対象の選択バイアス・レビュー観察期間の検証
+- モデルと評価手順の確定
 - 未使用Holdoutによる最終評価
 
 ---
@@ -199,7 +199,7 @@ SQLは処理の順序に沿って連番で管理しています。
 |---|---|
 | `analysis_plots.py` | 分析結果の可視化 |
 | `bootstrap.py` | ブートストラップによる推定 |
-| `model_metrics.py` | 分類モデルの評価指標・しきい値評価 |
+| `model_metrics.py` |  分類モデルのしきい値別・ランキング評価 |
 | `model_search.py` | 複数のハイパーパラメータ候補を時系列CVで評価 |
 | `model_summary.py` | モデル結果の集計・整理 |
 | `model_training.py` | 前処理とモデル学習 |
@@ -788,12 +788,24 @@ Random SearchとGrid Searchによって5パラメータを探索しました。
 
 4-FoldすべてでAPが改善しました。ただし、繰り返しの探索に使用したCV上の結果であり、最終Holdoutでの性能は未評価です。
 
+#### ランキング評価
+
+調整前後のCatBoost Model Cについて、同じ4-Fold CVで予測確率上位K件の低評価捕捉性能を比較しました。
+
+| 指標 | 調整前 | 調整後 |
+|---|---:|---:|
+| Precision@100 | 29.75% | **37.50%** |
+| Recall@100 | 2.30% | **3.01%** |
+| Lift@100 | 3.24倍 | **4.11倍** |
+
+各Foldで100件ずつ選択した場合、4-Fold合計の低評価捕捉数は119件から150件へ増加しました。
+
+これらはモデル選択にも使用したCV上の結果であり、実際の顧客対応による低評価防止効果を示すものではありません。
+
 **今後の予定**
 
-- CatBoost Model CのRandom Searchと必要に応じたGrid Search
-- Precision@Kによる実務的な評価
-- レビュー観察期間・予測対象の選択バイアスの検証
-- 最終Holdout評価
+- 予測対象の選択バイアス・レビュー観察期間の検証
+- 未使用Holdoutによる最終評価
 
 Notebook: `notebooks/13_low_review_model_comparison.ipynb`
 
