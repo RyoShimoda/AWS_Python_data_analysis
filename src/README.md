@@ -4,12 +4,17 @@ Notebookには「何を確かめるか」「関数へ渡すデータ」「結果
 
 | ファイル | 主な役割 |
 |---|---|
-| `project_paths.py` | プロジェクト内の`data/`と`images/`の場所を定義 |
-| `sales_metrics.py` | 州・月・カテゴリ・季節の集計と平均注文額への構成額 |
-| `review_stats.py` | Kruskal–Wallis検定、効果量、Dunn検定後の州ペア整理 |
-| `model_metrics.py` | 低評価予測のしきい値別指標と最終評価 |
-| `analysis_plots.py` | 複数Notebookで使う箱ひげ図・カテゴリ図・推移図 |
-| `order_value_state_plots.py` | 注文単位の州別箱ひげ図を単独で保存する入口 |
+| `analysis_plots.py` | 分析結果の可視化 |
+| `bootstrap.py` | ブートストラップによる推定 |
+| `model_metrics.py` | 分類モデルの評価指標・しきい値評価 |
+| `model_search.py` | 複数のハイパーパラメータ候補を時系列CVで評価 |
+| `model_summary.py` | モデル結果の集計・整理 |
+| `model_training.py` | 前処理とモデル学習 |
+| `order_value_state_plots.py` | 注文金額・地域別分析の可視化 |
+| `project_paths.py` | ディレクトリパスの共通管理 |
+| `review_stats.py` | レビュー評価に関する統計処理 |
+| `sales_metrics.py` | 売上関連指標の集計 |
+
 
 ## 分類モデルの共通学習関数
 
@@ -17,6 +22,7 @@ Notebookには「何を確かめるか」「関数へ渡すデータ」「結果
 - `train_logistic_model()`：ロジスティック回帰を学習し、検証データの予測確率を取得
 - `train_random_forest_model()`：共通前処理を利用したRandom Forestの学習
 - `train_classifier_model()`：分類器を引数で指定し、XGBoost・LightGBM・CatBoostなどを共通のインターフェースで学習
+- `evaluate_parameter_candidates()`（`model_search.py`）：指定したハイパーパラメータ候補を時系列CVで評価し、Fold別結果と平均指標を返す
 
 モデル比較時は、Notebook内に同じ前処理を重複実装せず、これらの関数を利用する。
 

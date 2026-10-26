@@ -75,13 +75,12 @@ Amazon Athena / SQL
 - 特徴量セットA〜Eの比較、顧客履歴特徴量の時系列整合性修正
 
 **現在**
-- CatBoost Model Cを主な改善候補として選択
-- 4-Fold平均：ROC-AUC 0.6206、AP 0.1614
-- ハイパーパラメータ探索の準備段階
+- CatBoost Model Cのハイパーパラメータ調整を完了
+- 4-Fold平均：ROC-AUC 0.6217、AP 0.1757
+- Precision@Kなどの業務指標による評価へ移行
 
 **今後**
-- Random Searchと必要に応じたGrid Search
-- Precision@Kなどの業務指標による評価
+- Precision@K・Recall@Kによる評価
 - 予測対象の選択バイアス・レビュー観察期間の検証
 - 未使用Holdoutによる最終評価
 
@@ -137,6 +136,7 @@ AWS_Python_data_analysis/
 │   ├── analysis_plots.py
 │   ├── bootstrap.py
 │   ├── model_metrics.py
+│   ├── model_search.py
 │   ├── model_summary.py
 │   ├── model_training.py
 │   ├── order_value_state_plots.py
@@ -200,6 +200,7 @@ SQLは処理の順序に沿って連番で管理しています。
 | `analysis_plots.py` | 分析結果の可視化 |
 | `bootstrap.py` | ブートストラップによる推定 |
 | `model_metrics.py` | 分類モデルの評価指標・しきい値評価 |
+| `model_search.py` | 複数のハイパーパラメータ候補を時系列CVで評価 |
 | `model_summary.py` | モデル結果の集計・整理 |
 | `model_training.py` | 前処理とモデル学習 |
 | `order_value_state_plots.py` | 注文金額・地域別分析の可視化 |
@@ -756,7 +757,7 @@ SP州の`health_beauty`について、2017年冬と2018年冬の商品構成を�
 
 一方、Fold 4ではCatBoostがROC-AUC 0.6490、AP 0.2167となり、両指標で最良でした。
 
-本節はModel Aの特徴量を使用した初期比較です。特徴量セットA〜Eの比較結果は9.6節に記載しています。ハイパーパラメータの最適化は未実施です。
+本節はModel Aによる5モデルの初期比較です。特徴量比較とCatBoostの調整結果は9.6節に記載しています。
 
 ### 9.6 特徴量セットの比較と今後の改善
 
@@ -773,6 +774,19 @@ CatBoostについて、特徴量セットA〜Eを同じ4-Fold CVで比較しま�
 商品カテゴリの追加による性能改善が確認されました。平均APが最も高いModel Cを、今後のハイパーパラメータ調整の主候補としています。
 
 顧客履歴特徴量は、同一購入日時の注文を考慮した修正版SQLで再評価しています。
+
+#### CatBoost Model Cのハイパーパラメータ調整
+
+Random SearchとGrid Searchによって5パラメータを探索しました。
+
+| Model C | 平均ROC-AUC | 平均AP |
+|---|---:|---:|
+| 調整前 | 0.6206 | 0.1614 |
+| 調整後 | 0.6217 | **0.1757** |
+
+採用候補は `iterations=100`、`depth=3`、`learning_rate=0.02`、`l2_leaf_reg=7`、`random_strength=0.5` です。
+
+4-FoldすべてでAPが改善しました。ただし、繰り返しの探索に使用したCV上の結果であり、最終Holdoutでの性能は未評価です。
 
 **今後の予定**
 
