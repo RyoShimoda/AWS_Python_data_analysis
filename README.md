@@ -849,6 +849,7 @@ Random SearchとGrid Searchによって5パラメータを探索しました。
 #### 最終Holdout評価
 
 CVで選定したCatBoost Model Cを、ハイパーパラメータ調整に使用していない将来期間のHoldoutで評価しました。
+なお、全レビューが配送完了後の分析対象候補87,683件のうち、711件は時系列上の基準日・期間条件により、最終Holdoutから除外しました。
 
 | 指標 | 開発データ（4-Fold CV・GridSearch）| 最終Holdout |
 |---|---:|---:|
